@@ -458,9 +458,32 @@ export default function CompletarPerfilPage() {
         setPhotoError(data.error || "Erro ao enviar. Tente novamente.");
         return;
       }
-      // Salva todos os dados no localStorage para o perfil de edição
-      const profileToSave = { ...fd, foto_rosto: undefined, foto_corpo: undefined };
-      localStorage.setItem("cc_profile_data", JSON.stringify(profileToSave));
+
+      // Salva perfil no banco com as URLs das fotos vindas do Cloudinary
+      const profilePayload = {
+        nome_completo: fd.nome_completo, cpf: fd.cpf, rg: fd.rg,
+        data_nascimento: fd.data_nascimento, genero: fd.genero, etnia: fd.etnia,
+        whatsapp: fd.whatsapp, instagram: fd.instagram,
+        cep: fd.cep, endereco: fd.endereco, numero: fd.numero,
+        bairro: fd.bairro, cidade: fd.cidade, estado: fd.estado,
+        altura: fd.altura, peso: fd.peso, manequim: fd.manequim,
+        tamanho_camiseta: fd.tamanho_camiseta, calcado: fd.calcado,
+        olhos: fd.olhos, cabelo_tipo: fd.cabelo_tipo, cabelo_comprimento: fd.cabelo_comprimento,
+        areas_interesse: fd.areas_interesse, experiencia: fd.experiencia,
+        disponibilidade: fd.disponibilidade, nivel_ingles: fd.nivel_ingles,
+        nivel_espanhol: fd.nivel_espanhol,
+        foto_rosto_url: data.fotos?.rosto || "",
+        foto_corpo_url: data.fotos?.corpo || "",
+      };
+
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profilePayload),
+      });
+
+      // Cache local
+      localStorage.setItem("cc_profile_data", JSON.stringify(profilePayload));
       localStorage.setItem("cc_profile_complete", "true");
       setSubmitted(true);
     } catch {

@@ -32,13 +32,26 @@ export default function MinhaContaPage() {
   }, [status, router]);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
+    // Cache local para exibição imediata
     const raw = localStorage.getItem("cc_profile_data");
-    const data = raw ? JSON.parse(raw) : null;
-    const legacyProfile = localStorage.getItem("cc_profile_complete") === "true";
-    const legacyBanking = localStorage.getItem("cc_banking_complete") === "true";
-    setProfileComplete(checkProfileComplete(data) || legacyProfile);
-    setBankingComplete(checkBankingComplete(data) || legacyBanking);
-  }, []);
+    const cached = raw ? JSON.parse(raw) : null;
+    if (cached) {
+      setProfileComplete(checkProfileComplete(cached));
+      setBankingComplete(checkBankingComplete(cached));
+    }
+    // Busca dados reais do banco
+    fetch("/api/profile")
+      .then(r => r.json())
+      .then(data => {
+        if (data.perfil) {
+          setProfileComplete(checkProfileComplete(data.perfil));
+          setBankingComplete(checkBankingComplete(data.perfil));
+          localStorage.setItem("cc_profile_data", JSON.stringify(data.perfil));
+        }
+      })
+      .catch(() => { /* usa cache local */ });
+  }, [status]);
 
   if (status === "loading") {
     return (

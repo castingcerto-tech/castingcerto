@@ -100,23 +100,23 @@ model UserProfile {
   user                 User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   uuid                 String      @unique @default(cuid())
   // Identidade
-  nomeCompleto         String
-  cpf                  String      @unique
+  nomeCompleto         String?
+  cpf                  String?     @unique
   rg                   String?
   instagram            String?
   // Contato
-  whatsapp             String
+  whatsapp             String?
   dataNascimento       DateTime?
   // Características
-  genero               Genero?
-  etnia                Etnia?
+  genero               String?
+  etnia                String?
   isPcd                Boolean     @default(false)
   descricaoPcd         String?
   nacionalidade        String      @default("brasileira")
   // Idiomas
-  nivelIngles          NivelIdioma?
-  nivelEspanhol        NivelIdioma?
-  nivelFrances         NivelIdioma?
+  nivelIngles          String?
+  nivelEspanhol        String?
+  nivelFrances         String?
   outrosIdiomas        String?
   // Endereço
   cep                  String?
@@ -128,10 +128,10 @@ model UserProfile {
   latitude             Float?
   longitude            Float?
   // Físico
-  altura               Float?
-  peso                 Float?
+  altura               String?
+  peso                 String?
   manequim             String?
-  calcado              Int?
+  calcado              String?
   tamanhoCamiseta      String?
   olhos                String?
   cabeloTipo           String?
@@ -142,7 +142,7 @@ model UserProfile {
   disponibilidade      String?
   // Bancário
   banco                String?
-  tipoConta            TipoConta?
+  tipoConta            String?
   agencia              String?
   conta                String?
   tipoChavePix         String?

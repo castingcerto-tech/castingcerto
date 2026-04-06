@@ -109,30 +109,60 @@ export default function PerfilPage() {
   const [pd, setPd] = useState<ProfileData>(INITIAL);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saveError, setSaveError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [dataLost, setDataLost] = useState(false);
   const bankingRef = useRef<HTMLDivElement>(null);
+  const photoUrlsRef = useRef({ foto_rosto_url: "", foto_corpo_url: "" });
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
-  // Carrega dados salvos + pré-preenche sessão Google
+  // Carrega perfil do banco de dados
   useEffect(() => {
-    if (!session) return;
+    if (status !== "authenticated" || !session) return;
+    // Exibe localStorage como cache imediato enquanto carrega do servidor
     const raw = localStorage.getItem("cc_profile_data");
-    const stored = raw ? JSON.parse(raw) : {};
-    const hasData = raw && Object.keys(stored).some(k => stored[k] && stored[k] !== "");
-    // Se o perfil foi marcado como completo mas não tem dados locais, avisamos
-    const markedComplete = localStorage.getItem("cc_profile_complete") === "true";
-    if (markedComplete && !hasData) setDataLost(true);
-    setPd({
-      ...INITIAL,
-      ...stored,
-      nome_completo: stored.nome_completo || session.user?.name || "",
-      // email como chave pix se tipo = email e não tem chave salva
-    });
-  }, [session]);
+    if (raw) {
+      try {
+        const cached = JSON.parse(raw);
+        setPd(prev => ({ ...prev, ...cached }));
+      } catch { /* ignore */ }
+    }
+    fetch("/api/profile")
+      .then(r => r.json())
+      .then(data => {
+        if (data.perfil) {
+          const p = data.perfil;
+          photoUrlsRef.current = {
+            foto_rosto_url: p.foto_rosto_url || "",
+            foto_corpo_url: p.foto_corpo_url || "",
+          };
+          setPd({
+            ...INITIAL,
+            ...p,
+            nome_completo: p.nome_completo || session.user?.name || "",
+          });
+          // Atualiza cache local
+          localStorage.setItem("cc_profile_data", JSON.stringify(p));
+        } else {
+          // Nenhum perfil no BD ainda — usa nome da sessão
+          setPd(prev => ({
+            ...prev,
+            nome_completo: prev.nome_completo || session.user?.name || "",
+          }));
+          const markedComplete = localStorage.getItem("cc_profile_complete") === "true";
+          if (markedComplete && !raw) setDataLost(true);
+        }
+      })
+      .catch(() => {
+        // Fallback: usa localStorage se a API falhar
+        if (!raw) setDataLost(localStorage.getItem("cc_profile_complete") === "true");
+      })
+      .finally(() => setLoading(false));
+  }, [status, session]);
 
   // Scroll para #bancario se vier da URL
   useEffect(() => {
@@ -180,16 +210,34 @@ export default function PerfilPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 500));
-    localStorage.setItem("cc_profile_data", JSON.stringify(pd));
-    // Atualiza flags de completude
-    const profileOk = !!(pd.nome_completo && pd.cpf && pd.whatsapp && pd.data_nascimento && pd.cep && pd.cidade);
-    const bankingOk = !!((pd.tipo_chave_pix && pd.chave_pix) || (pd.banco && pd.conta));
-    if (profileOk) localStorage.setItem("cc_profile_complete", "true");
-    if (bankingOk) localStorage.setItem("cc_banking_complete", "true");
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaveError("");
+    try {
+      const payload = {
+        ...pd,
+        ...photoUrlsRef.current,
+      };
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao salvar");
+      }
+      // Atualiza cache local
+      localStorage.setItem("cc_profile_data", JSON.stringify(pd));
+      const profileOk = !!(pd.nome_completo && pd.cpf && pd.whatsapp && pd.data_nascimento && pd.cep && pd.cidade);
+      const bankingOk = !!((pd.tipo_chave_pix && pd.chave_pix) || (pd.banco && pd.conta));
+      if (profileOk) localStorage.setItem("cc_profile_complete", "true");
+      if (bankingOk) localStorage.setItem("cc_banking_complete", "true");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Erro ao salvar. Tente novamente.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleArea = (area: string) => {
@@ -235,6 +283,13 @@ export default function PerfilPage() {
       {saved && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 bg-green-500 text-white font-bold rounded-xl shadow-2xl text-sm pointer-events-none">
           <CheckCircle2 className="w-4 h-4" />Alterações salvas com sucesso!
+        </div>
+      )}
+
+      {/* Toast de erro */}
+      {saveError && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 bg-red-500 text-white font-bold rounded-xl shadow-2xl text-sm max-w-xs text-center">
+          <AlertCircle className="w-4 h-4 shrink-0" />{saveError}
         </div>
       )}
 
