@@ -410,6 +410,19 @@ export default function CompletarPerfilPage() {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
+  // Se já tem dados salvos, vai direto para edição do perfil
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    const raw = localStorage.getItem("cc_profile_data");
+    if (raw) {
+      try {
+        const stored = JSON.parse(raw);
+        const hasData = Object.keys(stored).some(k => stored[k] && stored[k] !== "" && k !== "areas_interesse");
+        if (hasData) router.replace("/minha-conta/perfil");
+      } catch { /* ignore */ }
+    }
+  }, [status, router]);
+
   const set  = (k: keyof FormData, v: unknown) => setFd(prev => ({ ...prev, [k]: v }));
   const next = () => setStep(s => Math.min(s + 1, STEPS.length));
   const prev = () => setStep(s => Math.max(s - 1, 1));

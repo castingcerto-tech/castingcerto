@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { useState, useRef } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useRef, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -821,11 +822,26 @@ function Step7({ fd, set, submitError }: { fd: FormData; set: (k: keyof FormData
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function CadastroPage() {
+  const { status } = useSession();
+  const router = useRouter();
   const [step, setStep]             = useState(1);
   const [fd, setFd]                 = useState<FormData>(INITIAL);
   const [submitted, setSubmitted]   = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [sending, setSending]       = useState(false);
+
+  // Se já está logado, redireciona para minha conta
+  useEffect(() => {
+    if (status === "authenticated") router.push("/minha-conta");
+  }, [status, router]);
+
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const set = (k: keyof FormData, v: unknown) => setFd(prev => ({ ...prev, [k]: v }));
 
