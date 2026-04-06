@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil, ChevronDown, User, HelpCircle } from "lucide-react";
+import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil, ChevronDown, User, HelpCircle, Clock, XCircle, AlertTriangle } from "lucide-react";
 
 function isComplete(p: Record<string, unknown> | null): boolean {
   if (!p) return false;
@@ -16,6 +16,7 @@ export default function MinhaContaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [complete, setComplete] = useState<boolean | null>(null);
+  const [userStatus, setUserStatus] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +46,7 @@ export default function MinhaContaPage() {
     fetch("/api/profile")
       .then(r => r.json())
       .then(data => {
+        if (data.userStatus) setUserStatus(data.userStatus);
         const ok = isComplete(data.perfil);
         setComplete(ok);
         if (data.perfil) localStorage.setItem("cc_profile_data", JSON.stringify(data.perfil));
@@ -149,7 +151,7 @@ export default function MinhaContaPage() {
         </div>
 
         {/* Alerta de cadastro incompleto */}
-        {complete === false && (
+        {complete === false && userStatus !== "REPROVADO" && (
           <Link href="/minha-conta/perfil"
             className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl bg-brand hover:bg-brand-light text-ink font-bold transition-all btn-shimmer">
             <span className="text-base">Completar cadastro</span>
@@ -157,14 +159,60 @@ export default function MinhaContaPage() {
           </Link>
         )}
 
-        {/* Vagas */}
-        <div className="rounded-2xl border border-dark-700 bg-dark-900 p-6 text-center">
-          <Briefcase className="w-8 h-8 text-cream/15 mx-auto mb-3" />
-          <p className="font-semibold text-cream mb-1">Vagas disponíveis</p>
-          <p className="text-cream/40 text-sm">
-            {complete ? "Novos eventos aparecerão aqui assim que disponíveis." : "Complete seu perfil para visualizar e se candidatar às vagas."}
-          </p>
-        </div>
+        {/* Banner: Em Análise */}
+        {userStatus === "PENDENTE" && complete !== false && (
+          <div className="mb-8 rounded-2xl border border-brand/30 bg-brand/5 p-6 text-center">
+            <Clock className="w-10 h-10 text-brand mx-auto mb-3" />
+            <h2 className="text-lg font-bold text-cream mb-2">Cadastro em Análise</h2>
+            <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
+              Recebemos seu cadastro com sucesso! Nossa equipe está analisando seu perfil e suas fotos.
+              <br /><br />
+              Quando seu cadastro for <strong className="text-brand">aprovado</strong>, você será notificado por e-mail e terá acesso completo ao mural de vagas.
+            </p>
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-dark-800 border border-dark-700">
+              <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+              <span className="text-sm font-semibold text-brand">Pendente</span>
+            </div>
+          </div>
+        )}
+
+        {/* Banner: Necessita Correção */}
+        {userStatus === "CORRECAO" && (
+          <div className="mb-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-6 text-center">
+            <AlertTriangle className="w-10 h-10 text-blue-400 mx-auto mb-3" />
+            <h2 className="text-lg font-bold text-cream mb-2">Ajuste Necessário</h2>
+            <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
+              Nosso time identificou algo no seu cadastro que precisa ser corrigido. Por favor, atualize seus dados.
+            </p>
+            <Link href="/minha-conta/perfil"
+              className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold text-sm transition-colors">
+              <Pencil className="w-4 h-4" />
+              Corrigir Perfil
+            </Link>
+          </div>
+        )}
+
+        {/* Banner: Reprovado */}
+        {userStatus === "REPROVADO" && (
+          <div className="mb-8 rounded-2xl border border-red-500/30 bg-red-500/5 p-6 text-center">
+            <XCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <h2 className="text-lg font-bold text-cream mb-2">Cadastro Não Aprovado</h2>
+            <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
+              Infelizmente seu cadastro não foi aprovado neste momento. Em caso de dúvidas, entre em contato com nosso suporte.
+            </p>
+          </div>
+        )}
+
+        {/* Vagas — só mostra se aprovado ou sem status carregado ainda */}
+        {(userStatus === "APROVADO" || userStatus === null) && (
+          <div className="rounded-2xl border border-dark-700 bg-dark-900 p-6 text-center">
+            <Briefcase className="w-8 h-8 text-cream/15 mx-auto mb-3" />
+            <p className="font-semibold text-cream mb-1">Vagas disponíveis</p>
+            <p className="text-cream/40 text-sm">
+              {complete ? "Novos eventos aparecerão aqui assim que disponíveis." : "Complete seu perfil para visualizar e se candidatar às vagas."}
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );

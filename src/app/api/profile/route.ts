@@ -16,11 +16,14 @@ export async function GET() {
     });
 
     if (!user?.perfil) {
-      return NextResponse.json({ perfil: null });
+      return NextResponse.json({ perfil: null, userStatus: user?.status ?? "PENDENTE" });
     }
 
     const p = user.perfil;
     return NextResponse.json({
+      userStatus: user.status,         // PENDENTE | APROVADO | REPROVADO | CORRECAO | BLOQUEADO
+      motivoReprovacao: user.motivoReprovacao ?? null,
+      observacaoAdmin: user.observacaoAdmin ?? null,
       perfil: {
         nome_completo:     p.nomeCompleto     ?? "",
         cpf:               p.cpf              ?? "",

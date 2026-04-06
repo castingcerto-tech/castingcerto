@@ -921,13 +921,24 @@ export default function CadastroPage() {
           <div className="w-20 h-20 rounded-full bg-brand/15 flex items-center justify-center mx-auto mb-6 animate-glow-brand">
             <CheckCircle2 className="w-10 h-10 text-brand" />
           </div>
-          <h1 className="text-3xl font-bold text-cream mb-3">Cadastro enviado!</h1>
+          <h1 className="text-3xl font-bold text-cream mb-3">Cadastro em Análise!</h1>
           <p className="text-cream/50 mb-4 leading-relaxed">
-            Nossa equipe irá analisar seu perfil em até 48 horas e você receberá uma resposta no e-mail e WhatsApp informados.
+            Recebemos seu cadastro com sucesso! Nossa equipe irá analisar seu perfil e suas fotos.
           </p>
-          <p className="text-cream/40 text-sm mb-8 px-4 py-3 bg-dark-800 border border-dark-600 rounded-xl">
-            💳 <strong className="text-cream/70">Dados bancários pendentes</strong> — acesse sua conta para adicionar seu PIX ou conta bancária e garantir o recebimento dos eventos.
-          </p>
+          <div className="text-left mb-6 px-5 py-4 bg-dark-800 border border-dark-600 rounded-xl space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0 animate-pulse" />
+              <p className="text-cream/60 text-sm">Quando seu cadastro for <strong className="text-brand">aprovado</strong>, você será notificado por <strong className="text-cream/80">e-mail</strong>.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0" />
+              <p className="text-cream/60 text-sm">Após a aprovação, você terá acesso ao mural de vagas e poderá se candidatar aos eventos.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-2 h-2 rounded-full bg-brand mt-1.5 shrink-0" />
+              <p className="text-cream/60 text-sm">💳 <strong className="text-cream/70">Dados bancários pendentes</strong> — acesse sua conta para adicionar seu PIX ou conta bancária.</p>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/minha-conta" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand hover:bg-brand-light text-ink font-bold rounded transition-all btn-shimmer">
               Acessar minha conta
