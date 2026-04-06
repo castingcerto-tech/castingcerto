@@ -1,19 +1,43 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, Briefcase, Settings, ArrowRight, Loader2 } from "lucide-react";
+import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil } from "lucide-react";
+
+function isComplete(p: Record<string, unknown> | null): boolean {
+  if (!p) return false;
+  return !!(p.nome_completo && p.cpf && p.whatsapp && p.data_nascimento && p.cep && p.cidade);
+}
 
 export default function MinhaContaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [complete, setComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    // Cache imediato
+    const raw = localStorage.getItem("cc_profile_data");
+    if (raw) {
+      try { setComplete(isComplete(JSON.parse(raw))); } catch { /* ignore */ }
+    }
+    // Busca real do banco
+    fetch("/api/profile")
+      .then(r => r.json())
+      .then(data => {
+        const ok = isComplete(data.perfil);
+        setComplete(ok);
+        if (data.perfil) localStorage.setItem("cc_profile_data", JSON.stringify(data.perfil));
+      })
+      .catch(() => { /* usa cache */ });
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -62,18 +86,30 @@ export default function MinhaContaPage() {
           <p className="text-cream/40 text-sm mt-1">{user.email}</p>
         </div>
 
-        {/* Completar cadastro */}
-        <Link href="/minha-conta/perfil"
-          className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl bg-brand hover:bg-brand-light text-ink font-bold transition-all btn-shimmer">
-          <span className="text-base">Completar cadastro</span>
-          <ArrowRight className="w-5 h-5 shrink-0" />
-        </Link>
+        {/* Botão dinâmico */}
+        {complete === false && (
+          <Link href="/minha-conta/perfil"
+            className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl bg-brand hover:bg-brand-light text-ink font-bold transition-all btn-shimmer">
+            <span className="text-base">Completar cadastro</span>
+            <ArrowRight className="w-5 h-5 shrink-0" />
+          </Link>
+        )}
+        {complete === true && (
+          <Link href="/minha-conta/perfil"
+            className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl border border-dark-600 hover:border-dark-500 hover:bg-dark-800/50 text-cream/60 hover:text-cream font-semibold transition-all">
+            <span className="text-base">Editar perfil</span>
+            <Pencil className="w-4 h-4 shrink-0" />
+          </Link>
+        )}
+        {/* null = carregando, não mostra nada ainda */}
 
         {/* Vagas */}
         <div className="rounded-2xl border border-dark-700 bg-dark-900 p-6 text-center">
           <Briefcase className="w-8 h-8 text-cream/15 mx-auto mb-3" />
           <p className="font-semibold text-cream mb-1">Vagas disponíveis</p>
-          <p className="text-cream/40 text-sm">Complete seu perfil para visualizar e se candidatar às vagas.</p>
+          <p className="text-cream/40 text-sm">
+            {complete ? "Novos eventos aparecerão aqui assim que disponíveis." : "Complete seu perfil para visualizar e se candidatar às vagas."}
+          </p>
         </div>
       </main>
     </div>
