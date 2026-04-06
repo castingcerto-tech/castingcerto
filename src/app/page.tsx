@@ -845,6 +845,9 @@ function Footer() {
             <Link href="/termos" className="text-cream/20 hover:text-cream/50 text-xs transition-colors">
               Termos de Uso
             </Link>
+            <Link href="/admin" className="text-cream/20 hover:text-cream/50 text-xs transition-colors">
+              Área Administrativa
+            </Link>
           </div>
         </div>
       </div>

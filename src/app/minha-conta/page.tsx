@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil, ChevronDown, User, HelpCircle, Clock, XCircle, AlertTriangle } from "lucide-react";
+import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil, ChevronDown, User, HelpCircle, Clock, XCircle, AlertTriangle, Shield } from "lucide-react";
 
 function isComplete(p: Record<string, unknown> | null): boolean {
   if (!p) return false;
@@ -125,6 +125,14 @@ export default function MinhaContaPage() {
                     <HelpCircle className="w-4 h-4 text-brand shrink-0" />
                     Suporte
                   </Link>
+                  {session.user?.role === "ADMIN" && (
+                    <Link href="/admin"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-cream/70 hover:text-cream hover:bg-dark-700 transition-colors">
+                      <Shield className="w-4 h-4 text-brand shrink-0" />
+                      Painel Admin
+                    </Link>
+                  )}
                 </div>
 
                 {/* Sair */}

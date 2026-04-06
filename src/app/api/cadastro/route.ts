@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -35,10 +37,21 @@ export async function POST(req: NextRequest) {
 
     const nome         = formData.get("nome_completo") as string;
     const email        = formData.get("email") as string;
+    const password     = formData.get("password") as string;
     const cpf          = formData.get("cpf") as string;
     const whatsapp     = formData.get("whatsapp") as string;
     const fotoRosto    = formData.get("foto_rosto") as File | null;
     const fotoCorpo    = formData.get("foto_corpo") as File | null;
+
+    if (!email || !password || password.length < 8) {
+      return NextResponse.json({ error: "E-mail e senha são obrigatórios (mínimo 8 caracteres)." }, { status: 400 });
+    }
+
+    // Verifica se já existe
+    const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (existing) {
+      return NextResponse.json({ error: "Este e-mail já está cadastrado." }, { status: 409 });
+    }
 
     if (!fotoRosto || !fotoCorpo) {
       return NextResponse.json(
@@ -75,19 +88,53 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Log no servidor (em produção substituir por salvar no banco)
-    console.log("=== NOVO CADASTRO ===");
-    console.log("Nome:", nome);
-    console.log("Email:", email);
-    console.log("CPF:", cpf);
-    console.log("WhatsApp:", whatsapp);
-    console.log("Foto rosto:", urlRosto);
-    console.log("Foto corpo:", urlCorpo);
-    console.log("Dados completos:", dados);
+    // Salva no banco de dados
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await prisma.user.create({
+      data: {
+        email: email.toLowerCase().trim(),
+        passwordHash,
+        role: "PROMOTOR",
+        status: "PENDENTE",
+        perfil: {
+          create: {
+            nomeCompleto:     nome || null,
+            cpf:              cpf || null,
+            whatsapp:         whatsapp || null,
+            dataNascimento:   dados.data_nascimento ? new Date(dados.data_nascimento) : null,
+            genero:           dados.genero || null,
+            etnia:            dados.etnia || null,
+            instagram:        dados.instagram || null,
+            cep:              dados.cep || null,
+            endereco:         dados.endereco || null,
+            numero:           dados.numero || null,
+            bairro:           dados.bairro || null,
+            cidade:           dados.cidade || null,
+            estado:           dados.estado || null,
+            altura:           dados.altura || null,
+            peso:             dados.peso || null,
+            manequim:         dados.manequim || null,
+            tamanhoCamiseta:  dados.tamanho_camiseta || null,
+            calcado:          dados.calcado || null,
+            olhos:            dados.olhos || null,
+            cabeloTipo:       dados.cabelo_tipo || null,
+            cabeloComprimento: dados.cabelo_comprimento || null,
+            experiencia:      dados.experiencia || null,
+            areasAtuacao:     dados.areas_interesse || null,
+            disponibilidade:  dados.disponibilidade || null,
+            nivelIngles:      dados.nivel_ingles || null,
+            nivelEspanhol:    dados.nivel_espanhol || null,
+            fotoRosto:        urlRosto,
+            fotoCorpo:        urlCorpo,
+          },
+        },
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: "Cadastro recebido com sucesso!",
+      userId: user.id,
       fotos: { rosto: urlRosto, corpo: urlCorpo },
     });
   } catch (err) {

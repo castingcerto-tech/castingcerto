@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { href: "/admin/trabalhos",   icon: Briefcase,       label: "Trabalhos" },
   { href: "/admin/clientes",    icon: Building2,       label: "Clientes" },
   { href: "/admin/orcamentos",  icon: FileText,        label: "Orçamentos" },
+  { href: "/admin/usuarios",    icon: Shield,          label: "Administradores" },
   { href: "/admin/configuracoes", icon: Settings,      label: "Configurações" },
 ];
 
@@ -37,7 +39,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-  }, [status, router]);
+    if (status === "authenticated" && session?.user?.role !== "ADMIN") router.push("/minha-conta");
+  }, [status, session, router]);
 
   if (status === "loading" || !session) {
     return (
@@ -46,6 +49,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     );
   }
+
+  if (session.user?.role !== "ADMIN") return null;
 
   return (
     <div className="min-h-screen bg-dark-950 text-cream flex">

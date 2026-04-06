@@ -1,6 +1,8 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,15 +17,23 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        // MVP: aceita qualquer email/senha válidos
-        // TODO: verificar contra banco de dados em produção
         if (!credentials?.email || !credentials?.password) return null;
-        if (credentials.password.length < 8) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+          include: { perfil: { select: { nomeCompleto: true } } },
+        });
+        if (!user || !user.passwordHash) return null;
+
+        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!valid) return null;
+
         return {
-          id:    credentials.email,
-          email: credentials.email,
-          name:  credentials.email.split("@")[0],
+          id:    user.id,
+          email: user.email,
+          name:  user.perfil?.nomeCompleto ?? user.email.split("@")[0],
           image: null,
+          role:  user.role,
         };
       },
     }),
@@ -34,12 +44,16 @@ export const authOptions: NextAuthOptions = {
   },
   pages:   { signIn: "/login" },
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, user }) {
       if (account) token.provider = account.provider;
+      if (user) token.role = (user as { role?: string }).role ?? "PROMOTOR";
       return token;
     },
     async session({ session, token }) {
-      if (session.user) session.user.provider = token.provider as string;
+      if (session.user) {
+        session.user.provider = token.provider as string;
+        session.user.role = (token.role as string) ?? "PROMOTOR";
+      }
       return session;
     },
   },
