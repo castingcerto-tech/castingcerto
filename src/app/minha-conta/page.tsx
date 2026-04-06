@@ -1,11 +1,11 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil } from "lucide-react";
+import { LogOut, Briefcase, Settings, ArrowRight, Loader2, Pencil, ChevronDown, User, HelpCircle } from "lucide-react";
 
 function isComplete(p: Record<string, unknown> | null): boolean {
   if (!p) return false;
@@ -16,6 +16,19 @@ export default function MinhaContaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [complete, setComplete] = useState<boolean | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -60,20 +73,69 @@ export default function MinhaContaPage() {
             <Image src="/logo casting certo/logo casting certo.PNG" alt="Casting Certo" width={30} height={30} className="rounded-md" />
             <span className="text-sm font-bold text-cream hidden sm:block">Casting Certo</span>
           </Link>
-          <div className="flex items-center gap-2">
-            {user.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.image} alt="" className="w-8 h-8 rounded-full ring-2 ring-brand/30" />
-            )}
-            <span className="text-sm text-cream/50 hidden sm:block truncate max-w-[160px]">{user.name}</span>
-            <Link href="/minha-conta/perfil"
-              className="flex items-center gap-1.5 text-xs text-cream/50 hover:text-cream transition-colors border border-dark-600 hover:border-dark-500 rounded-lg px-3 py-2">
-              <Settings className="w-3.5 h-3.5" /><span className="hidden sm:block">Perfil</span>
-            </Link>
-            <button onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex items-center gap-1.5 text-xs text-cream/40 hover:text-cream/70 transition-colors border border-dark-600 hover:border-dark-500 rounded-lg px-3 py-2">
-              <LogOut className="w-3.5 h-3.5" />Sair
+
+          {/* Avatar com dropdown */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-dark-800 transition-colors"
+            >
+              {user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.image} alt="" className="w-8 h-8 rounded-full ring-2 ring-brand/40 shrink-0" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center shrink-0">
+                  <User className="w-4 h-4 text-brand" />
+                </div>
+              )}
+              <span className="text-sm text-cream/70 hidden sm:block truncate max-w-[140px]">
+                {user.name?.split(" ")[0]}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-cream/40 transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`} />
             </button>
+
+            {/* Dropdown */}
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-dark-800 border border-dark-600 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden animate-fade-in z-50">
+                {/* Info do usuário */}
+                <div className="px-4 py-3 border-b border-dark-700">
+                  <p className="text-sm font-semibold text-cream truncate">{user.name}</p>
+                  <p className="text-xs text-cream/40 truncate">{user.email}</p>
+                </div>
+
+                {/* Links */}
+                <div className="py-1.5">
+                  <Link href="/minha-conta"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-cream/70 hover:text-cream hover:bg-dark-700 transition-colors">
+                    <Briefcase className="w-4 h-4 text-brand shrink-0" />
+                    Minha Conta
+                  </Link>
+                  <Link href="/minha-conta/perfil"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-cream/70 hover:text-cream hover:bg-dark-700 transition-colors">
+                    <Settings className="w-4 h-4 text-brand shrink-0" />
+                    Editar Perfil
+                  </Link>
+                  <Link href="mailto:contato@castingcerto.com.br"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-cream/70 hover:text-cream hover:bg-dark-700 transition-colors">
+                    <HelpCircle className="w-4 h-4 text-brand shrink-0" />
+                    Suporte
+                  </Link>
+                </div>
+
+                {/* Sair */}
+                <div className="border-t border-dark-700 py-1.5">
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-dark-700 transition-colors">
+                    <LogOut className="w-4 h-4 shrink-0" />
+                    Sair da conta
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

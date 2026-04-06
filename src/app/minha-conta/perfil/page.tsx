@@ -232,7 +232,7 @@ export default function PerfilPage() {
       if (profileOk) localStorage.setItem("cc_profile_complete", "true");
       if (bankingOk) localStorage.setItem("cc_banking_complete", "true");
       setSaved(true);
-      setTimeout(() => router.push("/"), 1200);
+      setTimeout(() => router.push("/minha-conta"), 1200);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Erro ao salvar. Tente novamente.");
     } finally {
