@@ -1,0 +1,388 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  PROMOTOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDENTE
+  APROVADO
+  REPROVADO
+  CORRECAO
+  BLOQUEADO
+}
+
+enum JobStatus {
+  ABERTO
+  EM_ANDAMENTO
+  FINALIZADO
+  CANCELADO
+}
+
+enum CandidaturaStatus {
+  PENDENTE
+  APROVADO
+  REPROVADO
+  CANCELADO
+}
+
+enum Genero {
+  FEMININO
+  MASCULINO
+  NAO_BINARIO
+  OUTROS
+  NAO_INFORMAR
+}
+
+enum Etnia {
+  BRANCA
+  PRETA
+  PARDA
+  AMARELA
+  INDIGENA
+  OUTRA
+}
+
+enum NivelIdioma {
+  BASICO
+  INTERMEDIARIO
+  FLUENTE
+}
+
+enum TipoConta {
+  CORRENTE
+  POUPANCA
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODELOS PRINCIPAIS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id                 String        @id @default(cuid())
+  email              String        @unique
+  passwordHash       String?
+  googleId           String?       @unique
+  role               UserRole      @default(PROMOTOR)
+  status             UserStatus    @default(PENDENTE)
+  bloqueadoAte       DateTime?
+  motivoReprovacao   String?
+  observacaoAdmin    String?
+  dataReprovacao     DateTime?
+  criadoEm           DateTime      @default(now())
+  atualizadoEm       DateTime      @updatedAt
+  // Relações
+  perfil             UserProfile?
+  candidaturas       Candidatura[]
+  avaliacoes         Avaliacao[]
+  apresentacoes      Apresentacao[]
+  resetTokens        ResetToken[]
+}
+
+model UserProfile {
+  id                   String      @id @default(cuid())
+  userId               String      @unique
+  user                 User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uuid                 String      @unique @default(cuid())
+  // Identidade
+  nomeCompleto         String
+  cpf                  String      @unique
+  rg                   String?
+  instagram            String?
+  // Contato
+  whatsapp             String
+  dataNascimento       DateTime?
+  // Características
+  genero               Genero?
+  etnia                Etnia?
+  isPcd                Boolean     @default(false)
+  descricaoPcd         String?
+  nacionalidade        String      @default("brasileira")
+  // Idiomas
+  nivelIngles          NivelIdioma?
+  nivelEspanhol        NivelIdioma?
+  nivelFrances         NivelIdioma?
+  outrosIdiomas        String?
+  // Endereço
+  cep                  String?
+  endereco             String?
+  numero               String?
+  bairro               String?
+  cidade               String?
+  estado               String?
+  latitude             Float?
+  longitude            Float?
+  // Físico
+  altura               Float?
+  peso                 Float?
+  manequim             String?
+  calcado              Int?
+  tamanhoCamiseta      String?
+  olhos                String?
+  cabeloTipo           String?
+  cabeloComprimento    String?
+  // Profissional
+  experiencia          String?
+  areasAtuacao         String?     // CSV das áreas
+  disponibilidade      String?
+  // Bancário
+  banco                String?
+  tipoConta            TipoConta?
+  agencia              String?
+  conta                String?
+  tipoChavePix         String?
+  chavePix             String?
+  // Fotos
+  fotoRosto            String?     // URL (UploadThing)
+  fotoCorpo            String?     // URL (UploadThing)
+  // Termos
+  termoUsoImagem       Boolean     @default(false)
+  termoComunicacao     Boolean     @default(false)
+  // Meta
+  criadoEm             DateTime    @default(now())
+  atualizadoEm         DateTime    @updatedAt
+
+  @@index([cidade])
+  @@index([estado])
+  @@index([genero])
+}
+
+model ResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  criadoEm  DateTime @default(now())
+
+  @@index([token])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLIENTES (EMPRESAS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Cliente {
+  id                  String      @id @default(cuid())
+  cnpj                String      @unique
+  razaoSocial         String
+  nomeFantasia        String?
+  // Contato
+  emailNfe            String?
+  emailContato        String?
+  telefone            String?
+  contatoNome         String?
+  contatoCargo        String?
+  // Endereço
+  cep                 String?
+  logradouro          String?
+  numero              String?
+  complemento         String?
+  bairro              String?
+  cidade              String?
+  uf                  String?
+  // Meta
+  observacoes         String?
+  criadoEm            DateTime    @default(now())
+  atualizadoEm        DateTime    @updatedAt
+  // Relações
+  orcamentos          Orcamento[]
+  jobs                Job[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JOBS (VAGAS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Job {
+  id                    String        @id @default(cuid())
+  titulo                String
+  empresa               String
+  clienteId             String?
+  cliente               Cliente?      @relation(fields: [clienteId], references: [id])
+  status                JobStatus     @default(ABERTO)
+  // Endereço
+  cep                   String?
+  endereco              String?
+  numero                String?
+  bairro                String?
+  cidade                String?
+  estado                String?
+  local                 String?
+  latitude              Float?
+  longitude             Float?
+  // Requisitos
+  tipoServico           String?       // CSV
+  tipoServicoOutros     String?
+  descricao             String?
+  uniformeFornecido     Boolean       @default(false)
+  requerExperiencia     Boolean       @default(false)
+  // Filtros de perfil
+  generosAceitos        String?       // CSV
+  etniasAceitas         String?       // CSV
+  olhosAceitos          String?       // CSV
+  cabeloTiposAceitos    String?       // CSV
+  cabeloComprimentos    String?       // CSV
+  nivelInglesMin        NivelIdioma?
+  competencias          String?       // CSV
+  // Meta
+  criadoEm              DateTime      @default(now())
+  atualizadoEm          DateTime      @updatedAt
+  // Relações
+  dias                  JobDia[]
+  candidaturas          Candidatura[]
+
+  @@index([status])
+  @@index([cidade])
+}
+
+model JobDia {
+  id         String   @id @default(cuid())
+  jobId      String
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  data       DateTime
+  horaInicio String
+  horaFim    String
+  valor      Float
+}
+
+model Candidatura {
+  id              String            @id @default(cuid())
+  jobId           String
+  job             Job               @relation(fields: [jobId], references: [id])
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  status          CandidaturaStatus @default(PENDENTE)
+  dataCandidatura DateTime          @default(now())
+  atualizadoEm   DateTime          @updatedAt
+
+  @@unique([jobId, userId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AVALIAÇÕES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Avaliacao {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  clienteNome  String
+  nota         Int      // 1-5
+  comentario   String?
+  data         DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORÇAMENTOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Orcamento {
+  id                  String          @id @default(cuid())
+  clienteId           String?
+  cliente             Cliente?        @relation(fields: [clienteId], references: [id])
+  dataEvento          DateTime?
+  validadeDias        Int             @default(30)
+  descontoValor       Float?
+  descontoPercentual  Float?
+  criadoEm            DateTime        @default(now())
+  atualizadoEm        DateTime        @updatedAt
+  itens               OrcamentoItem[]
+}
+
+model OrcamentoItem {
+  id                  String    @id @default(cuid())
+  orcamentoId         String
+  orcamento           Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  funcao              String
+  quantidade          Int
+  cargaHorariaHoras   Int       @default(8)
+  valorDiaria         Float
+  diarias             Int       @default(1)
+  total               Float
+  ordem               Int       @default(0)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APRESENTAÇÕES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Apresentacao {
+  id          String               @id @default(cuid())
+  uuid        String               @unique @default(cuid())
+  criadoEm   DateTime             @default(now())
+  expiraEm   DateTime
+  criadoPor  String
+  criador    User                 @relation(fields: [criadoPor], references: [id])
+  itens       ApresentacaoItem[]
+}
+
+model ApresentacaoItem {
+  id              String       @id @default(cuid())
+  apresentacaoId  String
+  apresentacao    Apresentacao @relation(fields: [apresentacaoId], references: [id], onDelete: Cascade)
+  promotorId      String
+  ordem           Int          @default(0)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIGURAÇÕES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ConfiguracaoSite {
+  id              Int     @id @default(1)
+  tituloSite      String  @default("Casting Certo")
+  emailContato    String?
+  telefoneContato String?
+  enderecoContato String?
+  instagramLink   String?
+  // Textos institucionais
+  textoSobreCurto    String?
+  tituloQuemSomos    String?
+  textoQuemSomos     String?
+  tituloServicos     String?
+  textoServicos      String?
+  tituloPrivacidade  String?
+  textoPrivacidade   String?
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CPF BANIDO
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CpfBanido {
+  id       String   @id @default(cuid())
+  cpf      String   @unique
+  motivo   String?
+  criadoEm DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  nome         String
+  superAdmin   Boolean  @default(false)
+  criadoEm    DateTime @default(now())
+}
