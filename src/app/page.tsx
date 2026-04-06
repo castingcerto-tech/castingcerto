@@ -7,6 +7,7 @@ import HeroRotatingText from "@/components/HeroRotatingText";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import FadeInSection from "@/components/FadeInSection";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import NavAuthButton from "@/components/NavAuthButton";
 import {
   ArrowRight,
   Users,
@@ -128,10 +129,11 @@ function NavBar() {
           </a>
           <Link
             href="/login"
-            className="hidden sm:block text-sm text-cream/40 hover:text-cream transition-colors"
+            className="sm:hidden text-sm text-cream/40 hover:text-cream transition-colors"
           >
             Entrar
           </Link>
+          <NavAuthButton />
           <Link
             href="/contato"
             className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 bg-brand hover:bg-brand-light text-ink rounded transition-all whitespace-nowrap"

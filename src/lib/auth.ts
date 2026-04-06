@@ -28,7 +28,10 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 dias — sessão persiste mesmo fechando o navegador
+  },
   pages:   { signIn: "/login" },
   callbacks: {
     async jwt({ token, account }) {
