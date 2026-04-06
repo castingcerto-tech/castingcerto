@@ -110,6 +110,7 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
+  const [dataLost, setDataLost] = useState(false);
   const bankingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -121,10 +122,15 @@ export default function PerfilPage() {
     if (!session) return;
     const raw = localStorage.getItem("cc_profile_data");
     const stored = raw ? JSON.parse(raw) : {};
+    const hasData = raw && Object.keys(stored).some(k => stored[k] && stored[k] !== "");
+    // Se o perfil foi marcado como completo mas não tem dados locais, avisamos
+    const markedComplete = localStorage.getItem("cc_profile_complete") === "true";
+    if (markedComplete && !hasData) setDataLost(true);
     setPd({
       ...INITIAL,
       ...stored,
       nome_completo: stored.nome_completo || session.user?.name || "",
+      // email como chave pix se tipo = email e não tem chave salva
     });
   }, [session]);
 
@@ -241,6 +247,20 @@ export default function PerfilPage() {
             Mantenha seus dados atualizados. Clique em &ldquo;Salvar&rdquo; para guardar as alterações.
           </p>
         </div>
+
+        {/* Aviso dados não encontrados localmente */}
+        {dataLost && (
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-amber-300 mb-0.5">Dados não encontrados neste dispositivo</p>
+              <p className="text-sm text-amber-300/70 leading-relaxed">
+                Seus dados foram enviados anteriormente, mas não estão salvos neste navegador.
+                Por favor, preencha novamente e clique em <strong>Salvar</strong> para guardar localmente.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ── 1. DADOS PESSOAIS ──────────────────────────────── */}
         <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6">

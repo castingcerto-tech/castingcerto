@@ -445,6 +445,9 @@ export default function CompletarPerfilPage() {
         setPhotoError(data.error || "Erro ao enviar. Tente novamente.");
         return;
       }
+      // Salva todos os dados no localStorage para o perfil de edição
+      const profileToSave = { ...fd, foto_rosto: undefined, foto_corpo: undefined };
+      localStorage.setItem("cc_profile_data", JSON.stringify(profileToSave));
       localStorage.setItem("cc_profile_complete", "true");
       setSubmitted(true);
     } catch {

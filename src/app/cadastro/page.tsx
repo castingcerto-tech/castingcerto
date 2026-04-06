@@ -875,6 +875,9 @@ export default function CadastroPage() {
         setPhotoError(data.error || "Erro ao enviar. Tente novamente.");
         return;
       }
+      // Salva dados no localStorage para pré-preencher o perfil de edição
+      const profileToSave = { ...fd, password: undefined, confirm_password: undefined, foto_rosto: undefined, foto_corpo: undefined };
+      localStorage.setItem("cc_profile_data", JSON.stringify(profileToSave));
       localStorage.setItem("cc_registration_type", "email");
       localStorage.setItem("cc_banking_complete", "false");
       setSubmitted(true);
