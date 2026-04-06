@@ -1,57 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  AlertTriangle, CheckCircle2, ChevronRight, LogOut,
-  User, Landmark, Briefcase, Settings, ArrowRight, Loader2,
-} from "lucide-react";
-
-function checkProfileComplete(data: Record<string, unknown> | null): boolean {
-  if (!data) return false;
-  return !!(data.nome_completo && data.cpf && data.whatsapp && data.data_nascimento && data.cep && data.cidade);
-}
-
-function checkBankingComplete(data: Record<string, unknown> | null): boolean {
-  if (!data) return false;
-  return !!((data.tipo_chave_pix && data.chave_pix) || (data.banco && data.conta));
-}
+import { LogOut, Briefcase, Settings, ArrowRight, Loader2 } from "lucide-react";
 
 export default function MinhaContaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [profileComplete, setProfileComplete] = useState(false);
-  const [bankingComplete, setBankingComplete] = useState(false);
-
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
-
-  useEffect(() => {
-    if (status !== "authenticated") return;
-    // Cache local para exibição imediata
-    const raw = localStorage.getItem("cc_profile_data");
-    const cached = raw ? JSON.parse(raw) : null;
-    if (cached) {
-      setProfileComplete(checkProfileComplete(cached));
-      setBankingComplete(checkBankingComplete(cached));
-    }
-    // Busca dados reais do banco
-    fetch("/api/profile")
-      .then(r => r.json())
-      .then(data => {
-        if (data.perfil) {
-          setProfileComplete(checkProfileComplete(data.perfil));
-          setBankingComplete(checkBankingComplete(data.perfil));
-          localStorage.setItem("cc_profile_data", JSON.stringify(data.perfil));
-        }
-      })
-      .catch(() => { /* usa cache local */ });
-  }, [status]);
 
   if (status === "loading") {
     return (
@@ -64,12 +26,6 @@ export default function MinhaContaPage() {
   if (!session) return null;
 
   const user = session.user;
-  const isGoogle = user.provider === "google";
-  const profileSectionOk = isGoogle ? profileComplete : true;
-  const fullyComplete = profileSectionOk && bankingComplete;
-  const doneCount = [profileSectionOk, bankingComplete].filter(Boolean).length;
-  const percent = Math.round((doneCount / 2) * 100);
-  const ctaHref = !profileSectionOk && isGoogle ? "/completar-perfil" : "/minha-conta/perfil";
 
   return (
     <div className="min-h-screen bg-dark-950 text-cream">
@@ -106,126 +62,22 @@ export default function MinhaContaPage() {
           <p className="text-cream/40 text-sm mt-1">{user.email}</p>
         </div>
 
-        {/* ALERTA INCOMPLETO */}
-        {!fullyComplete && (
-          <div className="mb-6 rounded-2xl border-2 border-brand/60 bg-brand/5 overflow-hidden">
-            <div className="p-5">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertTriangle className="w-5 h-5 text-brand" />
-                </div>
-                <div>
-                  <p className="font-bold text-brand text-base mb-0.5">Cadastro incompleto</p>
-                  <p className="text-sm text-cream/50 leading-relaxed">
-                    {isGoogle && !profileSectionOk
-                      ? "Adicione suas informações pessoais, fotos e dados de pagamento para aparecer nas vagas."
-                      : "Seus dados pessoais estão prontos. Adicione seus dados bancários para receber pelos eventos."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Barra de progresso */}
-              <div className="mb-4">
-                <div className="flex justify-between text-xs text-cream/30 mb-1.5">
-                  <span>Perfil {percent}% completo</span>
-                  <span>{doneCount} de 2 seções</span>
-                </div>
-                <div className="h-2.5 bg-dark-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-brand rounded-full transition-all duration-700" style={{ width: `${percent}%` }} />
-                </div>
-              </div>
-
-              {/* Itens pendentes */}
-              <div className="space-y-1.5 mb-5">
-                {isGoogle && !profileSectionOk && (
-                  <div className="flex items-center gap-2 text-sm text-cream/60">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
-                    Dados pessoais, fotos e características físicas
-                  </div>
-                )}
-                {!bankingComplete && (
-                  <div className="flex items-center gap-2 text-sm text-cream/60">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
-                    Dados bancários (PIX ou conta bancária)
-                  </div>
-                )}
-              </div>
-
-              <Link href={ctaHref}
-                className="flex items-center justify-center gap-2 py-3.5 bg-brand hover:bg-brand-light text-ink font-bold rounded-xl transition-all btn-shimmer text-sm">
-                Completar cadastro <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* PERFIL COMPLETO */}
-        {fullyComplete && (
-          <div className="mb-6 rounded-2xl border-2 border-green-500/40 bg-green-500/5 p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-green-400" />
-            </div>
-            <div>
-              <p className="font-bold text-green-400 mb-0.5">Perfil completo!</p>
-              <p className="text-cream/50 text-sm">Você está elegível para ser chamado para eventos.</p>
-            </div>
-          </div>
-        )}
-
-        {/* Cards de status */}
-        <div className="space-y-2 mb-6">
-          <Link href="/minha-conta/perfil"
-            className={`flex items-center gap-3 p-4 rounded-xl border transition-all hover:bg-dark-800/50 ${
-              profileSectionOk ? "border-green-500/25 bg-green-500/5" : "border-brand/30 bg-brand/5"
-            }`}>
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-              profileSectionOk ? "bg-green-500/15 text-green-400" : "bg-brand/15 text-brand"
-            }`}>
-              <User className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-cream">Dados pessoais e fotos</p>
-              <p className="text-xs text-cream/40">{profileSectionOk ? "Informações completas" : "Clique para preencher"}</p>
-            </div>
-            {profileSectionOk
-              ? <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-              : <ChevronRight className="w-4 h-4 text-brand shrink-0" />}
-          </Link>
-
-          <Link href="/minha-conta/perfil#bancario"
-            className={`flex items-center gap-3 p-4 rounded-xl border transition-all hover:bg-dark-800/50 ${
-              bankingComplete ? "border-green-500/25 bg-green-500/5" : "border-brand/30 bg-brand/5"
-            }`}>
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-              bankingComplete ? "bg-green-500/15 text-green-400" : "bg-brand/15 text-brand"
-            }`}>
-              <Landmark className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-cream">Dados bancários</p>
-              <p className="text-xs text-cream/40">{bankingComplete ? "PIX ou conta configurados" : "Necessário para receber pagamentos"}</p>
-            </div>
-            {bankingComplete
-              ? <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-              : <ChevronRight className="w-4 h-4 text-brand shrink-0" />}
-          </Link>
-        </div>
-
-        {/* Link editar perfil */}
+        {/* Completar cadastro */}
         <Link href="/minha-conta/perfil"
-          className="flex items-center justify-center gap-2 w-full py-3 border border-dark-600 hover:border-dark-500 text-cream/50 hover:text-cream font-semibold rounded-xl transition-all text-sm mb-8">
-          <Settings className="w-4 h-4" />Ver e editar meu perfil completo
+          className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl bg-brand hover:bg-brand-light text-ink font-bold transition-all btn-shimmer">
+          <span className="text-base">Completar cadastro</span>
+          <ArrowRight className="w-5 h-5 shrink-0" />
         </Link>
 
         {/* Vagas */}
         <div className="rounded-2xl border border-dark-700 bg-dark-900 p-6 text-center">
           <Briefcase className="w-8 h-8 text-cream/15 mx-auto mb-3" />
           <p className="font-semibold text-cream mb-1">Vagas disponíveis</p>
-          <p className="text-cream/40 text-sm">
-            {fullyComplete ? "Novos eventos aparecerão aqui assim que disponíveis." : "Complete seu perfil para visualizar e se candidatar às vagas."}
-          </p>
+          <p className="text-cream/40 text-sm">Complete seu perfil para visualizar e se candidatar às vagas.</p>
         </div>
       </main>
     </div>
   );
 }
+
+

@@ -45,7 +45,7 @@ export default function LoginPage() {
 
   const handleGoogle = async () => {
     setGoogleLoading(true);
-    await signIn("google", { callbackUrl: "/minha-conta" });
+    await signIn("google", { callbackUrl: "/" });
   };
 
   return (

@@ -101,7 +101,7 @@ model UserProfile {
   uuid                 String      @unique @default(cuid())
   // Identidade
   nomeCompleto         String?
-  cpf                  String?     @unique
+  cpf                  String?
   rg                   String?
   instagram            String?
   // Contato

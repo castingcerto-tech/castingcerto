@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import CompletarCadastroBanner from "@/components/CompletarCadastroBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,7 +39,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={inter.variable}>
       <body className={`${inter.variable} bg-dark-950 text-cream antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <CompletarCadastroBanner />
+          {children}
+        </Providers>
       </body>
     </html>
   );

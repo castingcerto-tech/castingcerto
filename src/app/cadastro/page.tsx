@@ -999,7 +999,7 @@ export default function CadastroPage() {
                 {/* Opção Google */}
                 <button
                   type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/completar-perfil" })}
+                  onClick={() => signIn("google", { callbackUrl: "/" })}
                   className="w-full flex items-center justify-center gap-3 py-3.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 hover:border-dark-500 rounded-xl transition-all font-semibold text-cream text-sm mb-5"
                 >
                   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
