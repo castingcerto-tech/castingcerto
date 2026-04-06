@@ -31,7 +31,7 @@ export default function MinhaContaPage() {
   }, []);
 
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/login");
+    if (status === "unauthenticated") router.push("/");
   }, [status, router]);
 
   useEffect(() => {
