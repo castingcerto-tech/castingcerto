@@ -870,17 +870,18 @@ function Step7({ fd, set, submitError }: { fd: FormData; set: (k: keyof FormData
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function CadastroPage() {
-  const [step, setStep]           = useState(1);
-  const [fd, setFd]               = useState<FormData>(INITIAL);
-  const [submitted, setSubmitted] = useState(false);
+  const [step, setStep]             = useState(1);
+  const [fd, setFd]                 = useState<FormData>(INITIAL);
+  const [submitted, setSubmitted]   = useState(false);
   const [photoError, setPhotoError] = useState("");
+  const [sending, setSending]       = useState(false);
 
   const set = (k: keyof FormData, v: unknown) => setFd(prev => ({ ...prev, [k]: v }));
 
   const next = () => setStep(s => Math.min(s + 1, 7));
   const prev = () => setStep(s => Math.max(s - 1, 1));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fd.foto_rosto || !fd.foto_corpo) {
       setPhotoError(
@@ -897,7 +898,38 @@ export default function CadastroPage() {
       return;
     }
     setPhotoError("");
-    setSubmitted(true);
+    setSending(true);
+
+    try {
+      const body = new globalThis.FormData();
+      // Adiciona todos os campos de texto
+      const textKeys: (keyof FormData)[] = [
+        "email","password","nome_completo","cpf","rg","whatsapp","whatsapp_ddi",
+        "instagram","data_nascimento","genero","etnia","nacionalidade","descricao_pcd",
+        "cep","endereco","numero","bairro","cidade","estado",
+        "altura","peso","manequim","tamanho_camiseta","calcado","olhos","cabelo_tipo","cabelo_comprimento",
+        "experiencia","disponibilidade","areas_outros_texto","nivel_ingles","nivel_espanhol","nivel_frances","outros_idiomas",
+        "banco","tipo_conta","agencia","conta","tipo_chave_pix","chave_pix",
+      ];
+      textKeys.forEach(k => body.append(k, String(fd[k] ?? "")));
+      body.append("is_pcd", fd.is_pcd ? "true" : "false");
+      body.append("areas_interesse", fd.areas_interesse.join(","));
+      body.append("foto_rosto", fd.foto_rosto, "foto_rosto.jpg");
+      body.append("foto_corpo", fd.foto_corpo, "foto_corpo.jpg");
+
+      const res = await fetch("/api/cadastro", { method: "POST", body });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPhotoError(data.error || "Erro ao enviar. Tente novamente.");
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setPhotoError("Erro de conexão. Verifique sua internet e tente novamente.");
+    } finally {
+      setSending(false);
+    }
   };
 
   const progress = ((step - 1) / (STEPS.length - 1)) * 100;
@@ -1010,9 +1042,12 @@ export default function CadastroPage() {
                 Próximo<ChevronRight className="w-4 h-4" />
               </button>
             ) : (
-              <button type="submit"
-                className="inline-flex items-center gap-2 px-7 py-3 bg-brand hover:bg-brand-light text-ink font-bold rounded transition-all active:scale-95 btn-shimmer">
-                Enviar Cadastro<ArrowRight className="w-4 h-4" />
+              <button type="submit" disabled={sending}
+                className="inline-flex items-center gap-2 px-7 py-3 bg-brand hover:bg-brand-light text-ink font-bold rounded transition-all active:scale-95 btn-shimmer disabled:opacity-60 disabled:cursor-not-allowed">
+                {sending
+                  ? <><Loader2 className="w-4 h-4 animate-spin" />Enviando fotos...</>
+                  : <>Enviar Cadastro<ArrowRight className="w-4 h-4" /></>
+                }
               </button>
             )}
           </div>
