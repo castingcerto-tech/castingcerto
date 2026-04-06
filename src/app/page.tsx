@@ -8,6 +8,7 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 import FadeInSection from "@/components/FadeInSection";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import NavAuthButton from "@/components/NavAuthButton";
+import AuthRedirect from "@/components/AuthRedirect";
 import {
   ArrowRight,
   Users,
@@ -858,6 +859,7 @@ function Footer() {
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-dark-950 text-cream overflow-x-hidden">
+      <AuthRedirect />
       <NavBar />
       <HeroSection />
       <ClientLogoBar />
