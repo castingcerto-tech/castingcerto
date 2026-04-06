@@ -69,7 +69,7 @@ export default function MinhaContaPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-dark-900/95 backdrop-blur-xl border-b border-dark-700">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/minha-conta" className="flex items-center gap-2.5 shrink-0">
             <Image src="/logo casting certo/logo casting certo.PNG" alt="Casting Certo" width={30} height={30} className="rounded-md" />
             <span className="text-sm font-bold text-cream hidden sm:block">Casting Certo</span>
           </Link>
@@ -148,7 +148,7 @@ export default function MinhaContaPage() {
           <p className="text-cream/40 text-sm mt-1">{user.email}</p>
         </div>
 
-        {/* Botão dinâmico */}
+        {/* Alerta de cadastro incompleto */}
         {complete === false && (
           <Link href="/minha-conta/perfil"
             className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl bg-brand hover:bg-brand-light text-ink font-bold transition-all btn-shimmer">
@@ -156,14 +156,6 @@ export default function MinhaContaPage() {
             <ArrowRight className="w-5 h-5 shrink-0" />
           </Link>
         )}
-        {complete === true && (
-          <Link href="/minha-conta/perfil"
-            className="flex items-center justify-between gap-4 w-full p-5 mb-8 rounded-2xl border border-dark-600 hover:border-dark-500 hover:bg-dark-800/50 text-cream/60 hover:text-cream font-semibold transition-all">
-            <span className="text-base">Editar perfil</span>
-            <Pencil className="w-4 h-4 shrink-0" />
-          </Link>
-        )}
-        {/* null = carregando, não mostra nada ainda */}
 
         {/* Vagas */}
         <div className="rounded-2xl border border-dark-700 bg-dark-900 p-6 text-center">

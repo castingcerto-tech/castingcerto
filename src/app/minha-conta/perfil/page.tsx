@@ -267,7 +267,7 @@ export default function PerfilPage() {
             <span className="text-sm font-semibold hidden sm:block">Minha Conta</span>
           </Link>
           <div className="flex-1 flex justify-center">
-            <Link href="/">
+            <Link href="/minha-conta">
               <Image src="/logo casting certo/logo casting certo.PNG" alt="Casting Certo" width={28} height={28} className="rounded-md" />
             </Link>
           </div>
