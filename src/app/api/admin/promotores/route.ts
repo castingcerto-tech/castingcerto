@@ -13,8 +13,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status") || undefined;
   const q = searchParams.get("q") || undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = { role: "PROMOTOR" };
+  const where: Record<string, unknown> = { role: "PROMOTOR" as const };
   if (status) where.status = status;
 
   if (q) {
