@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight, ArrowLeft, CheckCircle2, User, MapPin, Ruler,
-  Briefcase, Landmark, Camera, Lock, Eye, EyeOff, ChevronRight,
+  Briefcase, Camera, Lock, Eye, EyeOff, ChevronRight,
   AlertCircle, Loader2,
 } from "lucide-react";
 
@@ -141,8 +141,7 @@ const STEPS = [
   { id: 3, label: "Endereço",     icon: MapPin },
   { id: 4, label: "Físico",       icon: Ruler },
   { id: 5, label: "Profissional", icon: Briefcase },
-  { id: 6, label: "Bancário",     icon: Landmark },
-  { id: 7, label: "Fotos",        icon: Camera },
+  { id: 6, label: "Fotos",        icon: Camera },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -666,56 +665,7 @@ function Step5({ fd, set }: { fd: FormData; set: (k: keyof FormData, v: unknown)
   );
 }
 
-// ─── Step 6 ───────────────────────────────────────────────────────────────────
-
-function Step6({ fd, set }: { fd: FormData; set: (k: keyof FormData, v: unknown) => void }) {
-  return (
-    <div className="grid sm:grid-cols-2 gap-5">
-      <div className="sm:col-span-2">
-        <p className="text-cream/40 text-sm">
-          Dados bancários são usados para pagamento dos eventos. Podem ser atualizados depois no seu perfil.
-        </p>
-      </div>
-      <Field label="PIX — Tipo de Chave">
-        <select className={selectCls} value={fd.tipo_chave_pix} onChange={e => set("tipo_chave_pix", e.target.value)}>
-          <option value="">Selecione...</option>
-          <option value="cpf">CPF</option>
-          <option value="email">E-mail</option>
-          <option value="telefone">Telefone</option>
-          <option value="aleatoria">Chave Aleatória</option>
-        </select>
-      </Field>
-      <Field label="PIX — Chave">
-        <input className={inputCls} placeholder="Digite sua chave PIX" value={fd.chave_pix}
-          onChange={e => set("chave_pix", e.target.value)} />
-      </Field>
-      <div className="sm:col-span-2 border-t border-dark-600 pt-5">
-        <p className="text-xs font-semibold text-cream/40 uppercase tracking-wider mb-4">Ou Transferência Bancária</p>
-      </div>
-      <Field label="Banco">
-        <input className={inputCls} placeholder="Ex: Nubank, Itaú" value={fd.banco}
-          onChange={e => set("banco", e.target.value)} />
-      </Field>
-      <Field label="Tipo de Conta">
-        <select className={selectCls} value={fd.tipo_conta} onChange={e => set("tipo_conta", e.target.value)}>
-          <option value="">Selecione...</option>
-          <option value="corrente">Conta Corrente</option>
-          <option value="poupanca">Conta Poupança</option>
-        </select>
-      </Field>
-      <Field label="Agência">
-        <input className={inputCls} placeholder="Ex: 0001" value={fd.agencia}
-          onChange={e => set("agencia", onlyDigits(e.target.value).slice(0, 6))} inputMode="numeric" />
-      </Field>
-      <Field label="Conta com Dígito">
-        <input className={inputCls} placeholder="Ex: 12345-6" value={fd.conta}
-          onChange={e => set("conta", e.target.value.replace(/[^0-9-]/g, "").slice(0, 12))} inputMode="numeric" />
-      </Field>
-    </div>
-  );
-}
-
-// ─── Step 7 ───────────────────────────────────────────────────────────────────
+// ─── Step 6 (Fotos) ───────────────────────────────────────────────────────────
 
 function PhotoPreview({ file, onRemove }: { file: File; onRemove: () => void }) {
   return (
@@ -878,7 +828,7 @@ export default function CadastroPage() {
 
   const set = (k: keyof FormData, v: unknown) => setFd(prev => ({ ...prev, [k]: v }));
 
-  const next = () => setStep(s => Math.min(s + 1, 7));
+  const next = () => setStep(s => Math.min(s + 1, 6));
   const prev = () => setStep(s => Math.max(s - 1, 1));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -924,6 +874,8 @@ export default function CadastroPage() {
         setPhotoError(data.error || "Erro ao enviar. Tente novamente.");
         return;
       }
+      localStorage.setItem("cc_registration_type", "email");
+      localStorage.setItem("cc_banking_complete", "false");
       setSubmitted(true);
     } catch {
       setPhotoError("Erro de conexão. Verifique sua internet e tente novamente.");
@@ -942,13 +894,21 @@ export default function CadastroPage() {
             <CheckCircle2 className="w-10 h-10 text-brand" />
           </div>
           <h1 className="text-3xl font-bold text-cream mb-3">Cadastro enviado!</h1>
-          <p className="text-cream/50 mb-8 leading-relaxed">
+          <p className="text-cream/50 mb-4 leading-relaxed">
             Nossa equipe irá analisar seu perfil em até 48 horas e você receberá uma resposta no e-mail e WhatsApp informados.
           </p>
-          <Link href="/" className="inline-flex items-center gap-2 px-7 py-3.5 bg-brand hover:bg-brand-light text-ink font-bold rounded transition-all btn-shimmer">
-            Voltar à página inicial
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <p className="text-cream/40 text-sm mb-8 px-4 py-3 bg-dark-800 border border-dark-600 rounded-xl">
+            💳 <strong className="text-cream/70">Dados bancários pendentes</strong> — acesse sua conta para adicionar seu PIX ou conta bancária e garantir o recebimento dos eventos.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/minha-conta" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand hover:bg-brand-light text-ink font-bold rounded transition-all btn-shimmer">
+              Acessar minha conta
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border border-dark-600 hover:border-dark-500 text-cream/60 hover:text-cream font-semibold rounded transition-all text-sm">
+              Página inicial
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -1019,8 +979,7 @@ export default function CadastroPage() {
             {step === 3 && <Step3 fd={fd} set={set} />}
             {step === 4 && <Step4 fd={fd} set={set} />}
             {step === 5 && <Step5 fd={fd} set={set} />}
-            {step === 6 && <Step6 fd={fd} set={set} />}
-            {step === 7 && <Step7 fd={fd} set={set} submitError={photoError} />}
+            {step === 6 && <Step7 fd={fd} set={set} submitError={photoError} />}
           </div>
 
           <div className="flex items-center justify-between gap-4">
