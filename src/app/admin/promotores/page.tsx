@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Users, Clock, CheckCircle2, XCircle, AlertTriangle, Search, ChevronDown } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 const STATUS_TABS = [
   { key: "",          label: "Todos",      icon: Users,         color: "text-cream" },
@@ -134,7 +135,7 @@ export default function PromotoresPage() {
               </thead>
               <tbody className="divide-y divide-dark-700">
                 {promotores.map((p) => (
-                  <tr key={p.id} className="hover:bg-dark-800/50 transition-colors">
+                  <tr key={p.id} className="hover:bg-dark-800/50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/promotores/${p.id}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {p.perfil?.fotoRosto ? (

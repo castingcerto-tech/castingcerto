@@ -18,6 +18,8 @@ export default function MinhaContaPage() {
   const [complete, setComplete] = useState<boolean | null>(null);
   const [userStatus, setUserStatus] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [motivoReprovacao, setMotivoReprovacao] = useState<string | null>(null);
+  const [observacaoAdmin, setObservacaoAdmin] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Fecha dropdown ao clicar fora
@@ -47,6 +49,8 @@ export default function MinhaContaPage() {
       .then(r => r.json())
       .then(data => {
         if (data.userStatus) setUserStatus(data.userStatus);
+        if (data.motivoReprovacao) setMotivoReprovacao(data.motivoReprovacao);
+        if (data.observacaoAdmin) setObservacaoAdmin(data.observacaoAdmin);
         const ok = isComplete(data.perfil);
         setComplete(ok);
         if (data.perfil) localStorage.setItem("cc_profile_data", JSON.stringify(data.perfil));
@@ -186,28 +190,71 @@ export default function MinhaContaPage() {
 
         {/* Banner: Necessita Correção */}
         {userStatus === "CORRECAO" && (
-          <div className="mb-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-6 text-center">
-            <AlertTriangle className="w-10 h-10 text-blue-400 mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-cream mb-2">Ajuste Necessário</h2>
-            <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
-              Nosso time identificou algo no seu cadastro que precisa ser corrigido. Por favor, atualize seus dados.
-            </p>
-            <Link href="/minha-conta/perfil"
-              className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold text-sm transition-colors">
-              <Pencil className="w-4 h-4" />
-              Corrigir Perfil
-            </Link>
+          <div className="mb-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-6">
+            <div className="text-center">
+              <AlertTriangle className="w-10 h-10 text-blue-400 mx-auto mb-3" />
+              <h2 className="text-lg font-bold text-cream mb-2">Ajuste Necessário</h2>
+              <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
+                Nosso time identificou algo no seu cadastro que precisa ser corrigido. Por favor, atualize seus dados.
+              </p>
+            </div>
+            {motivoReprovacao && (
+              <div className="mt-4 p-4 rounded-xl bg-dark-800/80 border border-blue-500/10 text-left">
+                <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider mb-2">Motivos informados:</p>
+                <ul className="space-y-1">
+                  {motivoReprovacao.split("; ").map((m, i) => (
+                    <li key={i} className="text-sm text-cream/70 flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span> {m}
+                    </li>
+                  ))}
+                </ul>
+                {observacaoAdmin && (
+                  <p className="mt-3 text-sm text-cream/50 italic border-t border-dark-700 pt-3">&ldquo;{observacaoAdmin}&rdquo;</p>
+                )}
+              </div>
+            )}
+            <div className="text-center mt-4">
+              <Link href="/minha-conta/perfil"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-semibold text-sm transition-colors">
+                <Pencil className="w-4 h-4" />
+                Corrigir Perfil
+              </Link>
+            </div>
           </div>
         )}
 
         {/* Banner: Reprovado */}
         {userStatus === "REPROVADO" && (
-          <div className="mb-8 rounded-2xl border border-red-500/30 bg-red-500/5 p-6 text-center">
-            <XCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-cream mb-2">Cadastro Não Aprovado</h2>
-            <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
-              Infelizmente seu cadastro não foi aprovado neste momento. Em caso de dúvidas, entre em contato com nosso suporte.
-            </p>
+          <div className="mb-8 rounded-2xl border border-red-500/30 bg-red-500/5 p-6">
+            <div className="text-center">
+              <XCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
+              <h2 className="text-lg font-bold text-cream mb-2">Cadastro Não Aprovado</h2>
+              <p className="text-cream/60 text-sm leading-relaxed max-w-md mx-auto">
+                Infelizmente seu cadastro não foi aprovado neste momento.
+              </p>
+            </div>
+            {motivoReprovacao && (
+              <div className="mt-4 p-4 rounded-xl bg-dark-800/80 border border-red-500/10 text-left">
+                <p className="text-xs text-red-400 font-semibold uppercase tracking-wider mb-2">Motivos:</p>
+                <ul className="space-y-1">
+                  {motivoReprovacao.split("; ").map((m, i) => (
+                    <li key={i} className="text-sm text-cream/70 flex items-start gap-2">
+                      <span className="text-red-400 mt-0.5">•</span> {m}
+                    </li>
+                  ))}
+                </ul>
+                {observacaoAdmin && (
+                  <p className="mt-3 text-sm text-cream/50 italic border-t border-dark-700 pt-3">&ldquo;{observacaoAdmin}&rdquo;</p>
+                )}
+              </div>
+            )}
+            <div className="text-center mt-4">
+              <Link href="mailto:contato@castingcerto.com.br"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-500/30 hover:bg-red-500/10 text-red-400 font-semibold text-sm transition-colors">
+                <HelpCircle className="w-4 h-4" />
+                Falar com Suporte
+              </Link>
+            </div>
           </div>
         )}
 

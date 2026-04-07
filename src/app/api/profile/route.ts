@@ -139,6 +139,19 @@ export async function PUT(req: NextRequest) {
       update: profileData,
     });
 
+    // Se o promotor estava reprovado ou em correção, volta para análise
+    if (user.status === "REPROVADO" || user.status === "CORRECAO") {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          status: "PENDENTE",
+          motivoReprovacao: null,
+          observacaoAdmin: null,
+          dataReprovacao: null,
+        },
+      });
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[PUT /api/profile]", err);
