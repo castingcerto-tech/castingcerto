@@ -8,7 +8,7 @@ import Image from "next/image";
 import {
   ArrowLeft, Save, CheckCircle2, Loader2, AlertCircle,
   User, MapPin, Ruler, Briefcase, Landmark,
-  AlertTriangle,
+  AlertTriangle, Camera, X, Eye,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -113,6 +113,11 @@ export default function PerfilPage() {
   const [saveError, setSaveError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [dataLost, setDataLost] = useState(false);
+  const [fotoRostoUrl, setFotoRostoUrl] = useState("");
+  const [fotoCorpoUrl, setFotoCorpoUrl] = useState("");
+  const [uploadingRosto, setUploadingRosto] = useState(false);
+  const [uploadingCorpo, setUploadingCorpo] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const bankingRef = useRef<HTMLDivElement>(null);
   const photoUrlsRef = useRef({ foto_rosto_url: "", foto_corpo_url: "" });
 
@@ -140,6 +145,8 @@ export default function PerfilPage() {
             foto_rosto_url: p.foto_rosto_url || "",
             foto_corpo_url: p.foto_corpo_url || "",
           };
+          setFotoRostoUrl(p.foto_rosto_url || "");
+          setFotoCorpoUrl(p.foto_corpo_url || "");
           setPd({
             ...INITIAL,
             ...p,
@@ -316,6 +323,71 @@ export default function PerfilPage() {
             </div>
           </div>
         )}
+
+        {/* ── 0. FOTOS ──────────────────────────────────────── */}
+        <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6">
+          <SectionTitle icon={Camera} title="Suas Fotos" subtitle="Foto de rosto e corpo inteiro" />
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            {/* Foto de Rosto */}
+            <PhotoUploadCard
+              label="Foto de Rosto"
+              tip="Do ombro pra cima, olhando pra câmera, sem filtro"
+              currentUrl={fotoRostoUrl}
+              uploading={uploadingRosto}
+              onUpload={async (file) => {
+                setUploadingRosto(true);
+                setPhotoError("");
+                try {
+                  const fd = new globalThis.FormData();
+                  fd.append("foto", file);
+                  fd.append("tipo", "rosto");
+                  const res = await fetch("/api/profile/upload-photo", { method: "POST", body: fd });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error);
+                  setFotoRostoUrl(data.url);
+                  photoUrlsRef.current.foto_rosto_url = data.url;
+                } catch (err) {
+                  setPhotoError(err instanceof Error ? err.message : "Erro ao enviar foto");
+                } finally {
+                  setUploadingRosto(false);
+                }
+              }}
+            />
+
+            {/* Foto de Corpo */}
+            <PhotoUploadCard
+              label="Foto de Corpo Inteiro"
+              tip="Corpo inteiro, de frente, preferencialmente em evento"
+              currentUrl={fotoCorpoUrl}
+              uploading={uploadingCorpo}
+              onUpload={async (file) => {
+                setUploadingCorpo(true);
+                setPhotoError("");
+                try {
+                  const fd = new globalThis.FormData();
+                  fd.append("foto", file);
+                  fd.append("tipo", "corpo");
+                  const res = await fetch("/api/profile/upload-photo", { method: "POST", body: fd });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error);
+                  setFotoCorpoUrl(data.url);
+                  photoUrlsRef.current.foto_corpo_url = data.url;
+                } catch (err) {
+                  setPhotoError(err instanceof Error ? err.message : "Erro ao enviar foto");
+                } finally {
+                  setUploadingCorpo(false);
+                }
+              }}
+            />
+          </div>
+
+          {photoError && (
+            <p className="mt-4 flex items-center gap-2 text-sm text-red-400 font-semibold">
+              <AlertCircle className="w-4 h-4 shrink-0" />{photoError}
+            </p>
+          )}
+        </div>
 
         {/* ── 1. DADOS PESSOAIS ──────────────────────────────── */}
         <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6">
@@ -593,6 +665,94 @@ export default function PerfilPage() {
             : <><Save className="w-5 h-5" />Salvar alterações</>}
         </button>
       </main>
+    </div>
+  );
+}
+
+// ─── Photo Upload Card ────────────────────────────────────────────────────────
+
+function PhotoUploadCard({
+  label, tip, currentUrl, uploading, onUpload,
+}: {
+  label: string;
+  tip: string;
+  currentUrl: string;
+  uploading: boolean;
+  onUpload: (file: File) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-cream uppercase tracking-wide">{label}</span>
+        {currentUrl && (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="text-xs text-brand hover:text-brand-light font-semibold transition-colors"
+          >
+            Trocar foto
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-cream/40 -mt-1">{tip}</p>
+
+      {currentUrl ? (
+        <div className="relative group rounded-xl overflow-hidden border border-dark-600">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={currentUrl} alt={label} className="w-full h-56 object-cover" />
+          {uploading && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-brand animate-spin" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <label className={`group flex flex-col items-center justify-center h-56 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+          uploading
+            ? "border-brand/40 bg-brand/5"
+            : "border-dark-600 bg-dark-800 hover:border-brand/40 hover:bg-dark-700"
+        }`}>
+          {uploading ? (
+            <Loader2 className="w-8 h-8 text-brand animate-spin" />
+          ) : (
+            <>
+              <Camera className="w-10 h-10 text-cream/20 group-hover:text-brand/50 mb-2 transition-colors" />
+              <span className="text-xs font-semibold text-cream/40 group-hover:text-cream/70 transition-colors">
+                Clique para enviar
+              </span>
+              <span className="text-xs text-cream/25 mt-1">JPG, PNG ou WebP · máx. 5 MB</span>
+            </>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onUpload(file);
+              e.target.value = "";
+            }}
+          />
+        </label>
+      )}
+
+      {/* Input oculto para trocar foto quando já tem preview */}
+      {currentUrl && (
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onUpload(file);
+            e.target.value = "";
+          }}
+        />
+      )}
     </div>
   );
 }
