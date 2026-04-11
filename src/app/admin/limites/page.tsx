@@ -26,6 +26,15 @@ interface CloudinaryUsage {
   lastUpdated: string;
 }
 
+interface NeonUsage {
+  projectName: string;
+  storage: { used: number; limit: number };
+  compute: { used: number; limit: number };
+  transfer: { used: number; limit: number };
+  branches: { used: number; limit: number };
+  lastUpdated: string;
+}
+
 /* ─── helpers ─────────────────────────────────────────────────── */
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -112,6 +121,8 @@ function LimitRow({ label, value, tip }: { label: string; value: string; tip?: s
 export default function LimitesPage() {
   const [cloudUsage, setCloudUsage] = useState<CloudinaryUsage | null>(null);
   const [cloudLoading, setCloudLoading] = useState(true);
+  const [neonUsage, setNeonUsage] = useState<NeonUsage | null>(null);
+  const [neonLoading, setNeonLoading] = useState(true);
 
   const fetchCloudUsage = () => {
     setCloudLoading(true);
@@ -122,8 +133,18 @@ export default function LimitesPage() {
       .finally(() => setCloudLoading(false));
   };
 
+  const fetchNeonUsage = () => {
+    setNeonLoading(true);
+    fetch("/api/admin/neon-usage")
+      .then((r) => r.json())
+      .then((data) => { if (!data.error) setNeonUsage(data); })
+      .catch(() => {})
+      .finally(() => setNeonLoading(false));
+  };
+
   useEffect(() => {
     fetchCloudUsage();
+    fetchNeonUsage();
   }, []);
 
   return (
@@ -263,28 +284,61 @@ export default function LimitesPage() {
           description="Onde ficam guardados todos os dados: cadastros, nomes, CPFs, informações dos promotores, logins, etc."
           color="bg-emerald-500/15 text-emerald-400"
         >
-          <div className="space-y-0">
-            <LimitRow
-              label="Armazenamento"
-              value="0,5 GB (512 MB)"
-              tip="Espaço para salvar os dados dos cadastros. Textos ocupam muito pouco — cabem milhares de promotores."
-            />
-            <LimitRow
-              label="Horas de processamento"
-              value="191,9 horas / mês"
-              tip="Tempo que o banco fica 'pensando' (processando consultas). Ele pausa sozinho quando ninguém usa, economizando horas."
-            />
-            <LimitRow
-              label="Branches (cópias do banco)"
-              value="10"
-              tip="Cópias para testes. Usamos apenas 1 (o principal)."
-            />
-            <LimitRow
-              label="Transferência de dados"
-              value="5 GB / mês"
-              tip="Quantidade de dados enviados entre o banco e o site."
-            />
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs text-cream/30">
+              {neonUsage && <>Atualizado em {new Date(neonUsage.lastUpdated).toLocaleString("pt-BR")}</>}
+            </p>
+            <button
+              onClick={fetchNeonUsage}
+              disabled={neonLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 transition-colors disabled:opacity-50 text-xs text-cream/60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${neonLoading ? "animate-spin" : ""}`} />
+              Atualizar
+            </button>
           </div>
+
+          {neonLoading && !neonUsage ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : neonUsage ? (
+            <div className="space-y-5">
+              <UsageBar
+                label="Armazenamento de dados"
+                icon={HardDrive}
+                used={neonUsage.storage.used}
+                limit={neonUsage.storage.limit}
+                formatFn={formatBytes}
+              />
+              <UsageBar
+                label="Horas de processamento (mensal)"
+                icon={Database}
+                used={neonUsage.compute.used}
+                limit={neonUsage.compute.limit}
+                formatFn={(n) => n.toFixed(1) + " horas"}
+              />
+              <UsageBar
+                label="Transferência de dados (mensal)"
+                icon={Wifi}
+                used={neonUsage.transfer.used}
+                limit={neonUsage.transfer.limit}
+                formatFn={formatBytes}
+              />
+              <UsageBar
+                label="Branches (cópias do banco)"
+                icon={Database}
+                used={neonUsage.branches.used}
+                limit={neonUsage.branches.limit}
+                formatFn={(n) => Math.round(n).toString()}
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-red-400/70 text-center py-4">
+              Não foi possível carregar os dados. Tente atualizar.
+            </p>
+          )}
+
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">O que acontece se acabar?</strong></p>
             <p>O banco pausa automaticamente quando acaba as horas de processamento. Volta no início do próximo mês. Os dados nunca são perdidos.</p>
