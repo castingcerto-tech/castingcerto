@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Shield,
+  Gauge,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { href: "/admin/clientes",    icon: Building2,       label: "Clientes" },
   { href: "/admin/orcamentos",  icon: FileText,        label: "Orçamentos" },
   { href: "/admin/usuarios",    icon: Shield,          label: "Administradores" },
+  { href: "/admin/limites",      icon: Gauge,           label: "Limites e Uso" },
   { href: "/admin/configuracoes", icon: Settings,      label: "Configurações" },
 ];
 
