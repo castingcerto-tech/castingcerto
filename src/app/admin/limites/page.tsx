@@ -35,6 +35,13 @@ interface NeonUsage {
   lastUpdated: string;
 }
 
+interface VercelUsage {
+  projectName: string;
+  deployments: { thisMonth: number; today: number; dailyLimit: number };
+  limits: { bandwidth: number; buildMinutes: number; imageOptimization: number };
+  lastUpdated: string;
+}
+
 /* ─── helpers ─────────────────────────────────────────────────── */
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -123,6 +130,8 @@ export default function LimitesPage() {
   const [cloudLoading, setCloudLoading] = useState(true);
   const [neonUsage, setNeonUsage] = useState<NeonUsage | null>(null);
   const [neonLoading, setNeonLoading] = useState(true);
+  const [vercelUsage, setVercelUsage] = useState<VercelUsage | null>(null);
+  const [vercelLoading, setVercelLoading] = useState(true);
 
   const fetchCloudUsage = () => {
     setCloudLoading(true);
@@ -142,9 +151,19 @@ export default function LimitesPage() {
       .finally(() => setNeonLoading(false));
   };
 
+  const fetchVercelUsage = () => {
+    setVercelLoading(true);
+    fetch("/api/admin/vercel-usage")
+      .then((r) => r.json())
+      .then((data) => { if (!data.error) setVercelUsage(data); })
+      .catch(() => {})
+      .finally(() => setVercelLoading(false));
+  };
+
   useEffect(() => {
     fetchCloudUsage();
     fetchNeonUsage();
+    fetchVercelUsage();
   }, []);
 
   return (
@@ -243,7 +262,45 @@ export default function LimitesPage() {
           description="É o lugar onde o site fica 'ligado' na internet. Sem isso, ninguém conseguiria acessar castingcerto.com.br. Pense como se fosse a energia elétrica da casa — se cortar, apaga tudo."
           color="bg-white/10 text-white"
         >
-          <div className="space-y-0">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs text-cream/30">
+              {vercelUsage && <>Atualizado em {new Date(vercelUsage.lastUpdated).toLocaleString("pt-BR")}</>}
+            </p>
+            <button
+              onClick={fetchVercelUsage}
+              disabled={vercelLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 transition-colors disabled:opacity-50 text-xs text-cream/60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${vercelLoading ? "animate-spin" : ""}`} />
+              Atualizar
+            </button>
+          </div>
+
+          {vercelLoading && !vercelUsage ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-white/40 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : vercelUsage ? (
+            <div className="space-y-5">
+              <UsageBar
+                label="Atualizações do site hoje (deploys — cada mudança que o programador faz conta como 1)"
+                icon={Server}
+                used={vercelUsage.deployments.today}
+                limit={vercelUsage.deployments.dailyLimit}
+                formatFn={(n) => Math.round(n).toString()}
+              />
+              <div className="pt-3 border-t border-dark-700 flex items-center gap-2 text-xs text-cream/40">
+                <Server className="w-3.5 h-3.5" />
+                <span>Atualizações neste mês: <strong className="text-cream/60">{vercelUsage.deployments.thisMonth}</strong></span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-red-400/70 text-center py-4">
+              Não foi possível carregar os dados. Tente atualizar.
+            </p>
+          )}
+
+          <div className="mt-4 space-y-0">
             <LimitRow
               label="Banda mensal (quantidade de dados que o site consegue enviar para quem acessa)"
               value="100 GB / mês"
@@ -252,12 +309,7 @@ export default function LimitesPage() {
             <LimitRow
               label="Builds (cada vez que o programador atualiza o site, conta como 1 build)"
               value="6.000 minutos / mês"
-              tip="É o tempo que a Vercel leva pra 'montar' o site depois de uma atualização. Cada atualização gasta uns 2 minutinhos. Dificilmente vocês vão se preocupar com isso."
-            />
-            <LimitRow
-              label="Deploys por dia (quantas vezes o site pode ser atualizado por dia)"
-              value="100 por dia"
-              tip="Cada vez que o programador manda uma mudança pro site, conta como 1 deploy. 100 por dia é demais — relaxa com esse."
+              tip="É o tempo que a Vercel leva pra montar o site depois de uma atualização. Cada atualização gasta uns 2 minutinhos. Dificilmente vocês vão se preocupar com isso."
             />
             <LimitRow
               label="Tempo das ações do site (login, cadastro, aprovar promotor...)"
@@ -270,6 +322,7 @@ export default function LimitesPage() {
               tip="O site automaticamente deixa as fotos mais leves. 1.000 por mês é bastante."
             />
           </div>
+
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">Risco de ultrapassar?</strong></p>
             <p>Muuuito baixo! A Vercel é super generosa no plano gratuito. Só precisaria pagar se o site ficasse famosão com milhares de acessos por dia. Pode ficar tranquila.</p>
