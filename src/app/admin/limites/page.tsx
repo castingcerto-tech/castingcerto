@@ -160,7 +160,7 @@ export default function LimitesPage() {
       <div className="mb-6 rounded-xl border border-brand/30 bg-brand/5 p-4 flex items-start gap-3">
         <Info className="w-5 h-5 text-brand shrink-0 mt-0.5" />
         <div className="text-sm text-cream/60">
-          <strong className="text-cream/80">O que é isso?</strong> O site da Casting Certo funciona usando vários serviços online gratuitos (como se fossem "ferramentas" que mantêm tudo rodando). Cada ferramenta tem um limite de uso. Nesta página você acompanha se está tudo tranquilo ou se está perto de algum limite. As barrinhas coloridas mostram:{" "}
+          <strong className="text-cream/80">O que é isso?</strong> O site da Casting Certo funciona usando vários serviços online gratuitos (como se fossem &quot;ferramentas&quot; que mantêm tudo rodando). Cada ferramenta tem um limite de uso. Nesta página você acompanha se está tudo tranquilo ou se está perto de algum limite. As barrinhas coloridas mostram:{" "}
           <strong className="text-green-400">Verde</strong> = tudo certo, pode ficar tranquila,{" "}
           <strong className="text-yellow-400">Amarelo</strong> = começando a usar bastante, atenção,{" "}
           <strong className="text-red-400">Vermelho</strong> = quase estourando o limite, precisa de ação.
@@ -341,7 +341,7 @@ export default function LimitesPage() {
 
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">O que acontece se acabar?</strong></p>
-            <p>Se acabar as horas de processamento, o banco "dorme" — o site para de funcionar até o mês seguinte (quando zera e volta ao normal). Mas relaxa: o banco é esperto e "dorme sozinho" quando ninguém está usando, então economiza horas automaticamente. E o mais importante: <strong className="text-cream/50">os dados NUNCA são perdidos</strong>, mesmo que o banco pause.</p>
+            <p>Se acabar as horas de processamento, o banco &quot;dorme&quot; — o site para de funcionar até o mês seguinte (quando zera e volta ao normal). Mas relaxa: o banco é esperto e &quot;dorme sozinho&quot; quando ninguém está usando, então economiza horas automaticamente. E o mais importante: <strong className="text-cream/50">os dados NUNCA são perdidos</strong>, mesmo que o banco pause.</p>
           </div>
         </ServiceSection>
 
