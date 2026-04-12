@@ -160,10 +160,10 @@ export default function LimitesPage() {
       <div className="mb-6 rounded-xl border border-brand/30 bg-brand/5 p-4 flex items-start gap-3">
         <Info className="w-5 h-5 text-brand shrink-0 mt-0.5" />
         <div className="text-sm text-cream/60">
-          <strong className="text-cream/80">O que é isso?</strong> O site usa vários serviços gratuitos. Cada um tem limites.
-          Aqui você acompanha se está perto de algum limite. <strong className="text-green-400">Verde</strong> = tranquilo,{" "}
-          <strong className="text-yellow-400">Amarelo</strong> = atenção,{" "}
-          <strong className="text-red-400">Vermelho</strong> = quase no limite.
+          <strong className="text-cream/80">O que é isso?</strong> O site da Casting Certo funciona usando vários serviços online gratuitos (como se fossem "ferramentas" que mantêm tudo rodando). Cada ferramenta tem um limite de uso. Nesta página você acompanha se está tudo tranquilo ou se está perto de algum limite. As barrinhas coloridas mostram:{" "}
+          <strong className="text-green-400">Verde</strong> = tudo certo, pode ficar tranquila,{" "}
+          <strong className="text-yellow-400">Amarelo</strong> = começando a usar bastante, atenção,{" "}
+          <strong className="text-red-400">Vermelho</strong> = quase estourando o limite, precisa de ação.
         </div>
       </div>
 
@@ -174,7 +174,7 @@ export default function LimitesPage() {
           icon={Camera}
           emoji="📸"
           title="Armazenamento de Fotos (Cloudinary)"
-          description="Onde ficam guardadas todas as fotos dos promotores — rosto e corpo inteiro."
+          description="É o 'armário digital' onde ficam guardadas todas as fotos dos promotores (rosto e corpo inteiro). Quando alguém faz cadastro e envia foto, ela vai parar aqui."
           color="bg-orange-500/15 text-orange-400"
         >
           <div className="flex items-center justify-between mb-4">
@@ -198,21 +198,21 @@ export default function LimitesPage() {
           ) : cloudUsage ? (
             <div className="space-y-5">
               <UsageBar
-                label="Espaço para fotos"
+                label="Espaço para fotos (quanto cabe no armário)"
                 icon={HardDrive}
                 used={cloudUsage.storage.used}
                 limit={cloudUsage.storage.limit}
                 formatFn={formatBytes}
               />
               <UsageBar
-                label="Tráfego mensal (quando alguém vê as fotos)"
+                label="Tráfego mensal (cada vez que alguém abre o site e vê uma foto, gasta um pouquinho)"
                 icon={Wifi}
                 used={cloudUsage.bandwidth.used}
                 limit={cloudUsage.bandwidth.limit}
                 formatFn={formatBytes}
               />
               <UsageBar
-                label="Edições de imagem por mês"
+                label="Edições de imagem por mês (cortar, redimensionar — dificilmente vocês vão usar isso)"
                 icon={ImageIcon}
                 used={cloudUsage.transformations.used}
                 limit={cloudUsage.transformations.limit}
@@ -231,7 +231,7 @@ export default function LimitesPage() {
 
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">O que acontece se acabar?</strong></p>
-            <p>As fotos já salvas continuam no ar, mas novas fotos não poderão ser enviadas até o próximo mês (banda) ou até liberar espaço (armazenamento).</p>
+            <p>As fotos que já estão no site continuam aparecendo normalmente. Mas se o espaço acabar, novos promotores não vão conseguir enviar fotos até sobrar espaço. Se o tráfego acabar, as fotos param de carregar até o mês seguinte (aí zera e volta ao normal).</p>
           </div>
         </ServiceSection>
 
@@ -240,39 +240,39 @@ export default function LimitesPage() {
           icon={Server}
           emoji="🌐"
           title="Hospedagem do Site (Vercel)"
-          description="Onde o site fica no ar para as pessoas acessarem. É como o 'terreno' onde a 'casa' do site foi construída."
+          description="É o lugar onde o site fica 'ligado' na internet. Sem isso, ninguém conseguiria acessar castingcerto.com.br. Pense como se fosse a energia elétrica da casa — se cortar, apaga tudo."
           color="bg-white/10 text-white"
         >
           <div className="space-y-0">
             <LimitRow
-              label="Banda mensal"
+              label="Banda mensal (quantidade de dados que o site consegue enviar para quem acessa)"
               value="100 GB / mês"
-              tip="Quanto de dados o site pode enviar para quem acessa. 100 GB é bastante — milhares de visitas por mês."
+              tip="Cada vez que alguém entra no site, gasta um pouquinho. 100 GB é MUITO — dá pra milhares de pessoas acessarem por mês sem problema."
             />
             <LimitRow
-              label="Builds (atualizações do site)"
+              label="Builds (cada vez que o programador atualiza o site, conta como 1 build)"
               value="6.000 minutos / mês"
-              tip="Cada vez que atualizamos o site, conta como um 'build'. Cada um usa poucos minutos."
+              tip="É o tempo que a Vercel leva pra 'montar' o site depois de uma atualização. Cada atualização gasta uns 2 minutinhos. Dificilmente vocês vão se preocupar com isso."
             />
             <LimitRow
-              label="Deploys por dia"
+              label="Deploys por dia (quantas vezes o site pode ser atualizado por dia)"
               value="100 por dia"
-              tip="Quantidade de vezes que o site pode ser atualizado por dia. Dificilmente passamos de 10."
+              tip="Cada vez que o programador manda uma mudança pro site, conta como 1 deploy. 100 por dia é demais — relaxa com esse."
             />
             <LimitRow
-              label="Funções serverless"
-              value="Tempo máximo de 10 segundos"
-              tip="As ações do site (login, cadastro, etc.) devem finalizar em até 10 segundos cada."
+              label="Tempo das ações do site (login, cadastro, aprovar promotor...)"
+              value="Máximo 10 segundos cada"
+              tip="Cada ação que alguém faz no site (como fazer login ou se cadastrar) precisa terminar em até 10 segundos. Na prática termina em menos de 2."
             />
             <LimitRow
-              label="Otimização de imagens"
+              label="Otimização de imagens (o site ajusta fotos pra carregar mais rápido)"
               value="1.000 imagens / mês"
-              tip="Imagens que o site ajusta automaticamente para carregar mais rápido."
+              tip="O site automaticamente deixa as fotos mais leves. 1.000 por mês é bastante."
             />
           </div>
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">Risco de ultrapassar?</strong></p>
-            <p>Muito baixo. O plano gratuito da Vercel é bastante generoso. Só é necessário investir em plano pago se o site tiver milhares de acessos diários.</p>
+            <p>Muuuito baixo! A Vercel é super generosa no plano gratuito. Só precisaria pagar se o site ficasse famosão com milhares de acessos por dia. Pode ficar tranquila.</p>
           </div>
         </ServiceSection>
 
@@ -281,7 +281,7 @@ export default function LimitesPage() {
           icon={Database}
           emoji="🗄️"
           title="Banco de Dados (Neon)"
-          description="Onde ficam guardados todos os dados: cadastros, nomes, CPFs, informações dos promotores, logins, etc."
+          description="É tipo uma 'planilha gigante' onde ficam guardadas todas as informações: nomes, CPFs, telefones, e-mails, dados bancários, logins... Tudo que os promotores preenchem no cadastro vai parar aqui."
           color="bg-emerald-500/15 text-emerald-400"
         >
           <div className="flex items-center justify-between mb-4">
@@ -305,28 +305,28 @@ export default function LimitesPage() {
           ) : neonUsage ? (
             <div className="space-y-5">
               <UsageBar
-                label="Armazenamento de dados"
+                label="Espaço para dados (quanto cabe na 'planilha')"
                 icon={HardDrive}
                 used={neonUsage.storage.used}
                 limit={neonUsage.storage.limit}
                 formatFn={formatBytes}
               />
               <UsageBar
-                label="Horas de processamento (mensal)"
+                label="Horas de processamento — tempo que o banco fica 'pensando' quando alguém faz algo no site"
                 icon={Database}
                 used={neonUsage.compute.used}
                 limit={neonUsage.compute.limit}
                 formatFn={(n) => n.toFixed(1) + " horas"}
               />
               <UsageBar
-                label="Transferência de dados (mensal)"
+                label="Transferência de dados — quantidade de informação trocada entre o site e o banco"
                 icon={Wifi}
                 used={neonUsage.transfer.used}
                 limit={neonUsage.transfer.limit}
                 formatFn={formatBytes}
               />
               <UsageBar
-                label="Branches (cópias do banco)"
+                label="Branches — são 'cópias' do banco usadas pra testes (vocês não vão usar, fica tranquila 😄)"
                 icon={Database}
                 used={neonUsage.branches.used}
                 limit={neonUsage.branches.limit}
@@ -341,7 +341,7 @@ export default function LimitesPage() {
 
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">O que acontece se acabar?</strong></p>
-            <p>O banco pausa automaticamente quando acaba as horas de processamento. Volta no início do próximo mês. Os dados nunca são perdidos.</p>
+            <p>Se acabar as horas de processamento, o banco "dorme" — o site para de funcionar até o mês seguinte (quando zera e volta ao normal). Mas relaxa: o banco é esperto e "dorme sozinho" quando ninguém está usando, então economiza horas automaticamente. E o mais importante: <strong className="text-cream/50">os dados NUNCA são perdidos</strong>, mesmo que o banco pause.</p>
           </div>
         </ServiceSection>
 
@@ -350,29 +350,29 @@ export default function LimitesPage() {
           icon={Mail}
           emoji="📧"
           title="E-mail Profissional (Cloudflare)"
-          description="Serviço que faz com que e-mails enviados para @castingcerto.com.br cheguem no Gmail."
+          description="É o 'carteiro digital' que pega os e-mails enviados para @castingcerto.com.br e entrega direitinho na caixa de entrada do Gmail. Sem ele, o e-mail profissional não funcionaria."
           color="bg-orange-500/15 text-orange-400"
         >
           <div className="space-y-0">
             <LimitRow
               label="E-mails recebidos"
-              value="Ilimitado"
-              tip="Não tem limite para receber e-mails em @castingcerto.com.br."
+              value="Ilimitado ✨"
+              tip="Pode receber e-mail à vontade em @castingcerto.com.br. Sem limite nenhum!"
             />
             <LimitRow
-              label="Endereços de e-mail"
-              value="200 endereços"
-              tip="Podem criar até 200 e-mails diferentes (suporte@, contato@, jessica@, etc)."
+              label="Quantos endereços de e-mail podem criar"
+              value="Até 200 endereços"
+              tip="Dá pra criar vários e-mails tipo suporte@, contato@, jessica@, daniela@... até 200 diferentes. Mais que suficiente!"
             />
             <LimitRow
-              label="Envio de e-mails (pelo Gmail)"
+              label="Envio de e-mails por dia"
               value="500 por dia"
-              tip="Limite do Gmail para enviar e-mails. É o limite de envio pela conta Gmail que recebe os e-mails."
+              tip="Máximo de e-mails que podem ser enviados por dia. Dificilmente vocês vão chegar perto disso no dia a dia."
             />
           </div>
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">Preciso me preocupar?</strong></p>
-            <p>Não. O plano gratuito do Cloudflare Email Routing é muito generoso. 500 e-mails/dia é mais que suficiente.</p>
+            <p>Não mesmo! Receber é ilimitado e 500 envios por dia é mais do que qualquer empresa pequena precisa. Pode usar sem medo.</p>
           </div>
         </ServiceSection>
 
@@ -381,34 +381,29 @@ export default function LimitesPage() {
           icon={Mail}
           emoji="✉️"
           title="E-mail Principal (Gmail)"
-          description="A conta do Gmail real que recebe todos os e-mails redirecionados de @castingcerto.com.br."
+          description="É a caixa de entrada real onde vocês leem e respondem todos os e-mails. Quando alguém manda mensagem para suporte@castingcerto.com.br, cai aqui no Gmail."
           color="bg-red-500/15 text-red-400"
         >
           <div className="space-y-0">
             <LimitRow
-              label="Armazenamento"
+              label="Espaço para guardar e-mails (inclui anexos como fotos e PDFs)"
               value="15 GB gratuitos"
-              tip="Espaço para guardar e-mails, anexos e arquivos no Google Drive. Compartilhado com Drive e Google Fotos."
+              tip="Esse espaço é compartilhado com Google Drive e Google Fotos da mesma conta. 15 GB dá pra MUITA coisa."
             />
             <LimitRow
-              label="Envio de e-mails"
+              label="Envio de e-mails por dia"
               value="500 por dia"
-              tip="Máximo de e-mails que podem ser enviados por dia com Gmail gratuito."
+              tip="Dá pra mandar até 500 e-mails por dia. No dia a dia normal, vocês vão usar uns 10-20 no máximo."
             />
             <LimitRow
-              label="Tamanho máximo de anexo"
+              label="Tamanho máximo de arquivo anexado"
               value="25 MB por e-mail"
-              tip="Cada e-mail pode ter anexos de até 25 MB."
-            />
-            <LimitRow
-              label="E-mails automáticos do site (redefinir senha, etc.)"
-              value="Depende do provedor"
-              tip="E-mails automáticos (como 'Esqueci minha senha') são enviados pela Vercel/NextAuth. O limite é do serviço de envio configurado."
+              tip="Cada e-mail pode ter arquivos (fotos, PDFs, etc.) de até 25 MB. Se precisar mandar algo maior, use o Google Drive."
             />
           </div>
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
-            <p>💡 <strong className="text-cream/50">Sobre e-mails automáticos do site</strong></p>
-            <p>Atualmente o site usa login por senha e Google. E-mails automáticos (como redefinição de senha) não estão ativos — o login é direto, sem envio de e-mail.</p>
+            <p>💡 <strong className="text-cream/50">Boa notícia</strong></p>
+            <p>15 GB é bastante e 500 e-mails por dia é muito mais do que vocês vão precisar. Só fique de olho se a conta do Gmail começar a encher com muitos anexos pesados (aí é só apagar os antigos).</p>
           </div>
         </ServiceSection>
 
@@ -417,34 +412,34 @@ export default function LimitesPage() {
           icon={Github}
           emoji="💻"
           title="Código-fonte (GitHub)"
-          description="Onde fica salvo todo o código do site. É como o 'cofre' com a receita do site."
+          description="É onde fica guardado todo o 'código' do site (as instruções que fazem o site funcionar). Vocês não precisam mexer aqui — é só pro programador. Mas é bom saber que existe."
           color="bg-purple-500/15 text-purple-400"
         >
           <div className="space-y-0">
             <LimitRow
-              label="Repositórios privados"
-              value="Ilimitado"
-              tip="Podem ter quantos projetos privados quiser no plano gratuito."
+              label="Repositórios privados (cada projeto é um 'repositório')"
+              value="Ilimitado ✨"
+              tip="Podem ter quantos projetos privados quiser. O código do site fica privado, ninguém de fora consegue ver."
             />
             <LimitRow
-              label="Colaboradores"
-              value="Ilimitado"
-              tip="Quantas pessoas quiser podem ter acesso ao código."
+              label="Colaboradores (pessoas com acesso ao código)"
+              value="Ilimitado ✨"
+              tip="Se um dia precisar de outro programador, pode dar acesso sem problema."
             />
             <LimitRow
-              label="GitHub Actions (automações)"
+              label="GitHub Actions (automações — vocês não usam isso, pode ignorar 😄)"
               value="2.000 minutos / mês"
-              tip="Usado para testes e deploys automáticos. Não estamos usando isso."
+              tip="É uma ferramenta pra programadores automatizarem tarefas. Não estamos usando, então não precisa se preocupar."
             />
             <LimitRow
-              label="Armazenamento de pacotes"
+              label="Armazenamento de pacotes (vocês não usam isso também 😄)"
               value="500 MB"
-              tip="Espaço para pacotes. Não estamos usando."
+              tip="Serve pra guardar códigos compartilhados. Não estamos usando."
             />
           </div>
           <div className="mt-4 p-3 rounded-lg bg-dark-800/50 text-xs text-cream/30 space-y-1">
             <p>💡 <strong className="text-cream/50">Preciso me preocupar?</strong></p>
-            <p>Não. O GitHub é extremamente generoso no plano gratuito. O código do site está seguro e sem risco de atingir limites.</p>
+            <p>Zero preocupação! O GitHub é onde fica o código do site guardado em segurança. Vocês não vão precisar entrar lá nunca — isso é coisa do programador. Tá aqui só pra vocês saberem que existe.</p>
           </div>
         </ServiceSection>
 
@@ -453,19 +448,19 @@ export default function LimitesPage() {
           icon={Globe}
           emoji="🌎"
           title="Domínio (Registro.br)"
-          description="O endereço 'castingcerto.com.br' — é como o 'nome' do site na internet."
+          description="O domínio é o endereço do site: castingcerto.com.br. É como a 'placa' da loja na internet. Se não renovar, outra pessoa pode pegar esse nome."
           color="bg-blue-500/15 text-blue-400"
         >
           <div className="space-y-0">
             <LimitRow
               label="Valor"
               value="~R$ 40/ano"
-              tip="O domínio .com.br precisa ser renovado uma vez por ano."
+              tip="Paga uma vez por ano, tipo uma 'assinatura' do nome do site. É baratinho."
             />
             <LimitRow
               label="Renovação"
-              value="Anual (obrigatória)"
-              tip="Se não renovar, outra pessoa pode registrar o domínio castingcerto.com.br."
+              value="Todo ano (não pode esquecer!)"
+              tip="Se passar da data e não renovar, o endereço castingcerto.com.br fica disponível. Alguém pode registrar no seu lugar!"
             />
           </div>
           <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-xs text-cream/40 space-y-1">
@@ -473,7 +468,7 @@ export default function LimitesPage() {
               <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" />
               <strong className="text-yellow-400">IMPORTANTE</strong>
             </p>
-            <p>Este é o <strong className="text-cream/60">único serviço pago</strong>. Fique atenta à data de vencimento no Registro.br para não perder o domínio!</p>
+            <p>Este é o <strong className="text-cream/60">único serviço que precisa pagar</strong> (~R$ 40 por ano). Coloca um lembrete no celular pra não esquecer de renovar!</p>
           </div>
         </ServiceSection>
 
